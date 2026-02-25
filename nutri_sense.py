@@ -18,7 +18,7 @@ st.markdown("""
 st.title("🧘 Nutri-Sense: AI Health & Yoga Guide")
 st.info("Public Access: No sign-in required. Please complete all fields to generate your 7-day plan.")
 
-# --- 2. 7-DAY WELLNESS DATASET ---
+# --- 2. 7-DAY WELLNESS DATASET (Images Removed) ---
 weekly_data = {
     "Monday": {"Yoga": "Tree Pose" , "Food": "Oats & Berries", "Benefit": "Improves balance."},
     "Tuesday": {"Yoga": "Cobra Pose", "Food": "Quinoa Salad", "Benefit": "Strengthens spine."},
@@ -42,7 +42,6 @@ with st.form("health_form"):
         sleep = st.slider("Sleep (Hours)*", 0, 12, 7)
     
     st.write("**Select All Current Health Concerns* (Multiple selection allowed)**")
-    # Comprehensive list of all concerns from your original logic
     all_concerns = [
         "None / General Wellness", "Hair fall", "Eye issue", "Headache", 
         "Pigmentation", "Heart discomfort", "Leg pain", "Infection", 
@@ -59,7 +58,6 @@ if submit:
     else:
         st.success(f"Plan generated for {name}!")
         
-        # AI Insight Logic based on concerns
         insight = "Maintain a balanced diet and stay hydrated."
         if "Hair fall" in selected_concerns or "PCOS" in selected_concerns:
             insight = "Focus on Iron-rich foods (Spinach, Beets) and Protein."
@@ -77,13 +75,11 @@ if submit:
         tabs = st.tabs(list(weekly_data.keys()))
         for i, day in enumerate(weekly_data.keys()):
             with tabs[i]:
-                c_img, c_txt = st.columns([1, 1.5])
-                with c_img: 
-                    st.image(weekly_data[day]["Img"], caption=weekly_data[day]["Yoga"], use_container_width=True)
-                with c_txt:
-                    st.write(f"**Yoga:** {weekly_data[day]['Yoga']}")
-                    st.write(f"**Recommended Food:** {weekly_data[day]['Food']}")
-                    st.write(f"**Primary Benefit:** {weekly_data[day]['Benefit']}")
+                # Display text directly without image columns
+                st.markdown(f"#### 🧘 Yoga Practice: {weekly_data[day]['Yoga']}")
+                st.write(f"**🥗 Recommended Food:** {weekly_data[day]['Food']}")
+                st.write(f"**💪 Primary Benefit:** {weekly_data[day]['Benefit']}")
+                st.divider()
 
         # --- PDF GENERATION ---
         pdf = FPDF()
@@ -93,7 +89,7 @@ if submit:
         pdf.set_font("Arial", size=12)
         pdf.cell(0, 10, f"Date: {date.today()} | Concerns: {', '.join(selected_concerns)}", ln=True)
         pdf.ln(5)
-        pdf.multi_cell(0, 10, f"Based on your profile, {insight} Practicing the 7-day yoga cycle will help manage {selected_concerns[0] if 'None' not in selected_concerns else 'overall wellness'}.")
+        pdf.multi_cell(0, 10, f"Based on your profile, {insight} Practicing the 7-day yoga cycle will help manage health concerns effectively.")
         
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
         st.download_button("📥 Download Detailed PDF Report", data=pdf_bytes, file_name=f"{name}_Report.pdf", mime="application/pdf")
@@ -102,7 +98,4 @@ if submit:
 st.divider()
 st.caption("""
 **Medical Disclaimer:** This application provides general wellness information only. It is **not** a substitute for professional medical advice. Always consult a qualified healthcare provider before starting any new exercise or diet.
-**Copyright Note:** Yoga poses are public domain; associated images are sourced from royalty-free platforms (Unsplash/Pexels) under Creative Commons licenses.
 """)
-
-
