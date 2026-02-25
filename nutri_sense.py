@@ -124,7 +124,7 @@ weekly_plan = {
         "Lunch": ["Quinoa salad", "Coconut water"],
         "Dinner": ["Grilled tofu", "Vegetable soup"],
         "Yoga": "Bhujangasana",
-        "Yoga_Image": "https://www.yogajournal.com/.image/t_share/MTQ2MTgwMDY1MTU1NDA0NDA1/bhujangasana.jpg",
+        "Yoga_Image": "C:\Users\LENOVO\Documents\qwings\Science Expo\yoga.jpeg",
         "Benefits": "Strengthens back, stimulates reproductive organs, improves flexibility."
     },
     # Add remaining days similarly
@@ -175,7 +175,7 @@ if st.button("Save & Download Report"):
         )
         pdf_file = "Nutri_Sense_Report.pdf"
         pdf.output(pdf_file)
-
+`
         st.success("✅ Data saved and PDF report generated!")
         with open(pdf_file, "rb") as f:
             st.download_button("📥 Download PDF Report", f, file_name=pdf_file)
@@ -186,3 +186,4 @@ app_url = "https://share.streamlit.io/your-username/nutri-sense/main/nutri_sense
 qr = qrcode.make(app_url)
 st.image(qr, width=220)
 st.write("Scan to open Nutri_Sense on mobile")
+
