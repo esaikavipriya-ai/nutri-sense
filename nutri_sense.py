@@ -116,7 +116,7 @@ weekly_plan = {
         "Lunch": ["Grilled chicken salad", "Cucumber juice"],
         "Dinner": ["Steamed fish", "Vegetable soup"],
         "Yoga": "Surya Namaskar",
-        "Yoga_Image": "https://www.yogajournal.com/.image/t_share/MTQ2MTgwMDY1MTU1NDA0NDA1/surya-namaskar.jpg",
+        "Yoga_Image": ""Yoga_Image": r"C:\Users\LENOVO\Documents\qwings\Science Expo\yoga.jpeg",
         "Benefits": "Improves digestion, reduces stress, regulates menstrual cycle."
     },
     "Tuesday": {
@@ -186,4 +186,5 @@ app_url = "https://share.streamlit.io/your-username/nutri-sense/main/nutri_sense
 qr = qrcode.make(app_url)
 st.image(qr, width=220)
 st.write("Scan to open Nutri_Sense on mobile")
+
 
