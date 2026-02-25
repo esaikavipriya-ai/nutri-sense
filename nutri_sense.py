@@ -5,22 +5,10 @@ from fpdf import FPDF
 from datetime import date
 import matplotlib.pyplot as plt
 import threading
-import pyttsx3
+
 
 # ---------- PAGE ----------
 st.set_page_config(page_title="Nutri_Sense", layout="wide")
-
-# ---------- SAFE VOICE ----------
-def speak(text):
-    def run():
-        try:
-            engine = pyttsx3.init()
-            engine.say(text)
-            engine.runAndWait()
-            engine.stop()
-        except:
-            pass
-    threading.Thread(target=run, daemon=True).start()
 
 # ---------- LANGUAGE ----------
 lang = st.sidebar.selectbox("🌐 Language", ["English","Tamil","Hindi"])
@@ -168,5 +156,6 @@ if st.button("Download PDF"):
 
     with open(file_path, "rb") as f:
         pdf_bytes = f.read()
+
 
     st.download_button(label="Download Report", data=pdf_bytes, file_name=file_path, mime="application/pdf")
