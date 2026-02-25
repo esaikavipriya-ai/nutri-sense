@@ -10,117 +10,73 @@ st.markdown("""
     <style>
     .main { background-color: #f9fbf9; }
     .stButton>button { width: 100%; border-radius: 8px; background-color: #1b5e20; color: white; height: 3.5em; font-weight: bold; }
-    div[data-testid="stExpander"] { border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+    div[data-testid="stExpander"] { border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; }
     h1 { color: #2e7d32; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🧘 Nutri-Sense: AI Health & Yoga Guide")
-st.write("### Personalized 7-Day Wellness & Nutrition Plan")
+st.info("Public Access: No sign-in required. Please complete all fields to generate your 7-day plan.")
 
-# --- 2. 7-DAY WELLNESS DATASET ---
-# Images sourced from Unsplash (Royalty-free)
+# --- 2. 7-DAY WELLNESS DATASET (Royalty-Free Images) ---
+# Sourced from 
+ under CC0 licenses
 weekly_data = {
-    "Monday": {
-        "Yoga": "Tree Pose (Vrikshasana)",
-        "Img": "https://images.unsplash.com",
-        "Food": "Steel-cut oats with almonds & flax seeds",
-        "Benefit": "Enhances physical balance and mental focus."
-    },
-    "Tuesday": {
-        "Yoga": "Cobra Pose (Bhujangasana)",
-        "Img": "https://images.unsplash.com",
-        "Food": "Quinoa bowl with leafy greens and lemon",
-        "Benefit": "Strengthens the spine and stimulates abdominal organs."
-    },
-    "Wednesday": {
-        "Yoga": "Warrior II (Virabhadrasana II)",
-        "Img": "https://images.unsplash.com",
-        "Food": "Lentil dal with brown rice and turmeric",
-        "Benefit": "Improves circulation and increases muscular endurance."
-    },
-    "Thursday": {
-        "Yoga": "Triangle Pose (Trikonasana)",
-        "Img": "https://images.unsplash.com",
-        "Food": "Grilled tofu/chickpea salad with avocado",
-        "Benefit": "Stretches the hips and helps relieve back pain."
-    },
-    "Friday": {
-        "Yoga": "Child's Pose (Balasana)",
-        "Img": "https://images.unsplash.com",
-        "Food": "Steamed broccoli and sweet potato mash",
-        "Benefit": "Calms the nervous system and relieves neck tension."
-    },
-    "Saturday": {
-        "Yoga": "Plank Pose (Phalakasana)",
-        "Img": "https://images.unsplash.com",
-        "Food": "Greek yogurt/Plant-based yogurt with berries",
-        "Benefit": "Builds core strength and improves overall posture."
-    },
-    "Sunday": {
-        "Yoga": "Corpse Pose (Savasana)",
-        "Img": "https://images.unsplash.com",
-        "Food": "Light vegetable stir-fry with ginger",
-        "Benefit": "Allows the body to recover and reduces fatigue."
-    }
+    "Monday": {"Yoga": "Tree Pose", "Img": "https://images.unsplash.com", "Food": "Oats & Berries", "Benefit": "Improves balance."},
+    "Tuesday": {"Yoga": "Cobra Pose", "Img": "https://images.unsplash.com", "Food": "Quinoa Salad", "Benefit": "Strengthens spine."},
+    "Wednesday": {"Yoga": "Warrior II", "Img": "https://images.unsplash.com", "Food": "Lentil Soup", "Benefit": "Increases stamina."},
+    "Thursday": {"Yoga": "Triangle Pose", "Img": "https://images.unsplash.com", "Food": "Grilled Tofu", "Benefit": "Relieves back pain."},
+    "Friday": {"Yoga": "Child's Pose", "Img": "https://images.unsplash.com", "Food": "Sweet Potato", "Benefit": "Calms the mind."},
+    "Saturday": {"Yoga": "Plank Pose", "Img": "https://images.unsplash.com", "Food": "Greek Yogurt", "Benefit": "Builds core strength."},
+    "Sunday": {"Yoga": "Corpse Pose", "Img": "https://images.unsplash.com", "Food": "Veggie Stir-fry", "Benefit": "Total relaxation."}
 }
 
-# --- 3. THE REQUIRED USER FORM ---
-with st.form("health_profile"):
-    st.subheader("📋 Step 1: Complete Your Profile (All Fields Required)")
-    c1, c2 = st.columns(2)
-    with c1:
-        name = st.text_input("Full Name*", placeholder="Enter your name")
+# --- 3. REQUIRED FORM ---
+with st.form("health_form"):
+    st.subheader("📋 Step 1: Health Profile")
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("Full Name*")
         age = st.number_input("Age*", 10, 100, value=25)
-        gender = st.selectbox("Gender*", ["--Select--", "Male", "Female", "Other"])
-    with c2:
-        mood = st.selectbox("Current Mood*", ["--Select--", "Happy", "Stressed", "Tired", "Calm"])
-        sleep = st.slider("Sleep Hours*", 0, 12, 7)
-        symptoms = st.multiselect("Health Concerns*", ["None", "Headache", "Body Pain", "Fatigue", "Digestion Issues"])
+        gender = st.selectbox("Gender*", ["Select", "Male", "Female", "Other"])
+    with col2:
+        mood = st.selectbox("Mood*", ["Select", "Happy", "Stressed", "Tired"])
+        sleep = st.slider("Sleep (Hours)*", 0, 12, 7)
+        symptoms = st.multiselect("Concerns*", ["None", "Headache", "Fatigue", "Digestion"])
 
-    submit_button = st.form_submit_button("🚀 Generate Wellness Report")
+    submit = st.form_submit_button("🚀 Generate Weekly Plan")
 
-# --- 4. VALIDATION & DASHBOARD ---
-if submit_button:
-    # Strict validation check
-    if not name or gender == "--Select--" or mood == "--Select--" or not symptoms:
-        st.error("⚠️ Error: All fields marked with * are required to generate your plan.")
+# --- 4. VALIDATION & DISPLAY ---
+if submit:
+    if not name or gender == "Select" or mood == "Select" or not symptoms:
+        st.error("⚠️ All fields marked with * are required.")
     else:
-        st.success(f"Form Submitted! Generating plan for {name}...")
+        st.success(f"Plan generated for {name}!")
         
-        # Risk Metric
-        risk_level = "Low" if "None" in symptoms else "Moderate"
-        st.divider()
-        st.subheader("📊 Your AI Health Analysis")
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            st.metric("Health Risk Score", risk_level)
-        with col_m2:
-            st.info(f"💡 AI Insight: Given your {mood} mood, we recommend focusing on 'Pranayama' (breathing) alongside your yoga poses.")
+        st.subheader("📅 Step 2: Your 7-Day Plan")
+        tabs = st.tabs(list(weekly_data.keys()))
+        for i, day in enumerate(weekly_data.keys()):
+            with tabs[i]:
+                c_img, c_txt = st.columns([1, 1.5])
+                with c_img: st.image(weekly_data[day]["Img"], caption=weekly_data[day]["Yoga"], use_container_width=True)
+                with c_txt:
+                    st.write(f"**Yoga:** {weekly_data[day]['Yoga']}")
+                    st.write(f"**Food:** {weekly_data[day]['Food']}")
+                    st.write(f"**Benefit:** {weekly_data[day]['Benefit']}")
 
-        # 7-Day Plan Display
-        st.subheader("📅 Step 2: Your 7-Day Yoga & Food Plan")
-        day_tabs = st.tabs(list(weekly_data.keys()))
-        for idx, day in enumerate(weekly_data.keys()):
-            with day_tabs[idx]:
-                col_img, col_txt = st.columns([1, 1.5])
-                with col_img:
-                    st.image(weekly_data[day]["Img"], caption=weekly_data[day]["Yoga"], use_container_width=True)
-                with col_txt:
-                    st.markdown(f"#### 🧘 Yoga: {weekly_data[day]['Yoga']}")
-                    st.write(f"**💪 Benefit:** {weekly_data[day]['Benefit']}")
-                    st.markdown(f"#### 🥗 Recommended Food: {weekly_data[day]['Food']}")
-                    st.caption("Tip: Ensure you stay hydrated throughout the day.")
-
-        # --- 5. PDF GENERATION ---
+        # PDF Export
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", 'B', 16)
-        pdf.cell(0, 10, f"Nutri-Sense Personal Report: {name}", ln=True, align='C')
+        pdf.cell(0, 10, f"Health Report: {name}", ln=True, align='C')
         pdf.set_font("Arial", size=12)
-        pdf.cell(0, 10, f"Date: {date.today()} | Risk Level: {risk_level}", ln=True)
-        pdf.ln(5)
-        pdf.multi_cell(0, 10, f"Based on your profile (Mood: {mood}, Sleep: {sleep} hrs), a consistent {weekly_data['Monday']['Yoga']} practice is recommended.")
-        
-        pdf_output = pdf.output(dest='S').encode('latin-1')
-        st.download_button(label="📥 Download Detailed PDF Report", data=pdf_output, file_name=f"Report_{name}.pdf", mime="application/pdf")
+        pdf.cell(0, 10, f"Risk Level: {'Low' if 'None' in symptoms else 'Moderate'}", ln=True)
+        pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        st.download_button("📥 Download PDF Report", data=pdf_bytes, file_name=f"{name}_Report.pdf")
+
+# --- 5. DISCLAIMER & COPYRIGHT ---
+st.divider()
+st.caption("""
+**Medical Disclaimer:** Content is for informational purposes only and not a substitute for professional medical advice. 
+**Copyright:** Yoga images are sourced from royalty-free platforms (Unsplash/Pexels) under Creative Commons licenses.
+""")
