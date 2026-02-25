@@ -20,11 +20,6 @@ title_text = {
 }
 
 st.title(title_text.get(lang,"Nutri_Sense"))
-
-# ---------- VOICE BUTTON ----------
-if st.button("🔊 Speak Welcome"):
-    speak("Welcome to Nutri Sense. Your smart nutrition assistant.")
-
 # ---------- USER DETAILS ----------
 with st.expander("👤 Enter Details"):
     name = st.text_input("Name")
@@ -159,3 +154,4 @@ if st.button("Download PDF"):
 
 
     st.download_button(label="Download Report", data=pdf_bytes, file_name=file_path, mime="application/pdf")
+
