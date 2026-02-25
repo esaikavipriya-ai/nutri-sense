@@ -1,169 +1,126 @@
 import streamlit as st
 import pandas as pd
-import csv
 from fpdf import FPDF
 from datetime import date
-import matplotlib.pyplot as plt
-import qrcode
-from PIL import Image
-import requests
 from io import BytesIO
-import time
 
-# ---------- PAGE CONFIG ----------
-st.set_page_config(page_title="Nutri_Sense | AI Health", layout="wide", page_icon="🥗")
-
-# ---------- PROFESSIONAL THEME (CSS) ----------
+# --- 1. PAGE CONFIG & THEME ---
+st.set_page_config(page_title="Nutri-Sense AI", layout="wide", page_icon="🧘")
 st.markdown("""
     <style>
-    .main { background-color: #f8f9fa; }
-    .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #007bff; color: white; }
-    .stExpander { border: 1px solid #e0e0e0; border-radius: 10px; background-color: white; }
-    h1 { color: #1e3d59; font-family: 'Helvetica Neue', sans-serif; }
-    h2, h3 { color: #2e5266; }
+    .main { background-color: #f9fbf9; }
+    .stButton>button { width: 100%; border-radius: 8px; background-color: #1b5e20; color: white; height: 3.5em; font-weight: bold; }
+    div[data-testid="stExpander"] { border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+    h1 { color: #2e7d32; text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
-# ---------- LANGUAGE ----------
-lang = st.sidebar.selectbox("🌐 Language", ["English", "Tamil", "Hindi"])
-title_text = {
-    "English": "Nutri_Sense AI",
-    "Tamil": "Nutri_Sense — ஊட்டச்சத்து உதவி",
-    "Hindi": "Nutri_Sense — स्मार्ट पोषण सहायक"
-}
-st.title(title_text.get(lang, "Nutri_Sense"))
+st.title("🧘 Nutri-Sense: AI Health & Yoga Guide")
+st.write("### Personalized 7-Day Wellness & Nutrition Plan")
 
-# ---------- USER DETAILS ----------
-with st.expander("👤 Step 1: User Profile Details", expanded=True):
-    c1, c2 = st.columns(2)
-    with c1:
-        name = st.text_input("Full Name", placeholder="John Doe")
-        age = st.number_input("Age", 10, 100, 25)
-        gender = st.selectbox("Gender", ["Female", "Male", "Other"])
-    with c2:
-        sleep = st.slider("Average Sleep (Hours)", 3, 12, 7)
-        mood = st.selectbox("Current Mood", ["Happy", "Normal", "Stress", "Sad"])
-        review = st.text_area("Medical History / Notes")
-
-# ---------- SYMPTOMS & SPECIFIC ISSUES ----------
-score_map = {"None": 0, "Mild": 1, "Moderate": 2, "Severe": 3}
-st.header("🩺 Step 2: Health Symptom Analysis")
-
-col1, col2, col3 = st.columns(3)
-with col1:
-    hair = st.selectbox("Hair fall", list(score_map.keys()))
-    eye = st.selectbox("Eye issue", list(score_map.keys()))
-    head = st.selectbox("Headache", list(score_map.keys()))
-    pigmentation = st.selectbox("Skin Pigmentation", list(score_map.keys()))
-with col2:
-    heart = st.selectbox("Heart discomfort", list(score_map.keys()))
-    leg = st.selectbox("Leg/Joint pain", list(score_map.keys()))
-    infection = st.selectbox("Frequent Infection", list(score_map.keys()))
-    kidney = st.selectbox("Kidney issue", list(score_map.keys()))
-with col3:
-    gall = st.selectbox("Gall bladder", list(score_map.keys()))
-    bodypain = st.selectbox("General Body pain", list(score_map.keys()))
-    periods = st.selectbox("Irregular periods", list(score_map.keys())) if gender=="Female" else "None"
-    pcos = st.selectbox("PCOS Symptoms", list(score_map.keys())) if gender=="Female" else "None"
-
-# ---------- CALCULATE RISK ----------
-scores = [hair, eye, head, pigmentation, heart, leg, infection, kidney, gall, bodypain, periods, pcos]
-total = sum(score_map[i] for i in scores)
-risk_percent = int((total / (len(scores) * 3)) * 100)
-
-# ---------- DASHBOARD LAYOUT ----------
-st.divider()
-res1, res2 = st.columns([1, 1])
-
-with res1:
-    st.subheader("📊 Health Risk Status")
-    if risk_percent < 30:
-        st.success(f"LOW RISK: {risk_percent}%")
-        insight = "Maintain current balanced diet and hydration."
-    elif risk_percent < 60:
-        st.warning(f"MODERATE RISK: {risk_percent}%")
-        insight = "Improve nutrition, sleep, and stress management."
-    else:
-        st.error(f"HIGH RISK: {risk_percent}%")
-        insight = "Preventive medical consultation highly recommended."
-    
-    st.info(f"**AI Insight:** {insight}")
-    if mood == "Stress":
-        st.write("💡 *Tip: Practice meditation and consume magnesium-rich foods.*")
-
-with res2:
-    # Nutrition Pie Chart
-    iron = 25 if hair!="None" or periods!="None" or pcos!="None" else 10
-    vitA = 25 if eye!="None" else 10
-    protein = 20 if bodypain!="None" or leg!="None" else 15
-    omega = 20 if heart!="None" else 10
-    hydration = 20 if kidney!="None" or infection!="None" else 15
-
-    fig, ax = plt.subplots(figsize=(4,4))
-    ax.pie([iron, vitA, protein, omega, hydration], 
-           labels=["Iron","Vit A","Protein","Omega-3","Water"], 
-           autopct="%1.1f%%", colors=['#ff9999','#66b3ff','#99ff99','#ffcc99','#c2c2f0'])
-    st.pyplot(fig)
-
-# ---------- WEEKLY PLAN ----------
-st.header("📅 Step 3: Personalized Wellness Plan")
-
-# Using URLs to ensure the app works anywhere; replace with local paths if using locally only.
-weekly_plan = {
+# --- 2. 7-DAY WELLNESS DATASET ---
+# Images sourced from Unsplash (Royalty-free)
+weekly_data = {
     "Monday": {
-        "Breakfast": ["Oats porridge", "Almond milk"],
-        "Lunch": ["Grilled chicken salad", "Cucumber juice"],
-        "Dinner": ["Steamed fish", "Vegetable soup"],
-        "Yoga": "Surya Namaskar",
-        "Yoga_Image": "https://images.unsplash.com",
-        "Benefits": "Improves digestion and regulates metabolism."
+        "Yoga": "Tree Pose (Vrikshasana)",
+        "Img": "https://images.unsplash.com",
+        "Food": "Steel-cut oats with almonds & flax seeds",
+        "Benefit": "Enhances physical balance and mental focus."
     },
     "Tuesday": {
-        "Breakfast": ["Spinach smoothie", "Green tea"],
-        "Lunch": ["Quinoa salad", "Coconut water"],
-        "Dinner": ["Grilled tofu", "Vegetable soup"],
-        "Yoga": "Bhujangasana",
-        "Yoga_Image": "https://images.unsplash.com",
-        "Benefits": "Strengthens spine and improves flexibility."
+        "Yoga": "Cobra Pose (Bhujangasana)",
+        "Img": "https://images.unsplash.com",
+        "Food": "Quinoa bowl with leafy greens and lemon",
+        "Benefit": "Strengthens the spine and stimulates abdominal organs."
+    },
+    "Wednesday": {
+        "Yoga": "Warrior II (Virabhadrasana II)",
+        "Img": "https://images.unsplash.com",
+        "Food": "Lentil dal with brown rice and turmeric",
+        "Benefit": "Improves circulation and increases muscular endurance."
+    },
+    "Thursday": {
+        "Yoga": "Triangle Pose (Trikonasana)",
+        "Img": "https://images.unsplash.com",
+        "Food": "Grilled tofu/chickpea salad with avocado",
+        "Benefit": "Stretches the hips and helps relieve back pain."
+    },
+    "Friday": {
+        "Yoga": "Child's Pose (Balasana)",
+        "Img": "https://images.unsplash.com",
+        "Food": "Steamed broccoli and sweet potato mash",
+        "Benefit": "Calms the nervous system and relieves neck tension."
+    },
+    "Saturday": {
+        "Yoga": "Plank Pose (Phalakasana)",
+        "Img": "https://images.unsplash.com",
+        "Food": "Greek yogurt/Plant-based yogurt with berries",
+        "Benefit": "Builds core strength and improves overall posture."
+    },
+    "Sunday": {
+        "Yoga": "Corpse Pose (Savasana)",
+        "Img": "https://images.unsplash.com",
+        "Food": "Light vegetable stir-fry with ginger",
+        "Benefit": "Allows the body to recover and reduces fatigue."
     }
 }
 
-for day, info in weekly_plan.items():
-    with st.expander(f"📌 View Schedule for {day}"):
-        tab1, tab2 = st.columns([2, 1])
-        with tab1:
-            st.write(f"**🍱 Meals:** {', '.join(info['Breakfast'])} (AM) | {', '.join(info['Lunch'])} (Day)")
-            st.write(f"**🧘 Yoga:** {info['Yoga']}")
-            st.caption(f"**Benefit:** {info['Benefits']}")
-        with tab2:
-            st.image(info["Yoga_Image"], caption=info["Yoga"], use_container_width=True)
+# --- 3. THE REQUIRED USER FORM ---
+with st.form("health_profile"):
+    st.subheader("📋 Step 1: Complete Your Profile (All Fields Required)")
+    c1, c2 = st.columns(2)
+    with c1:
+        name = st.text_input("Full Name*", placeholder="Enter your name")
+        age = st.number_input("Age*", 10, 100, value=25)
+        gender = st.selectbox("Gender*", ["--Select--", "Male", "Female", "Other"])
+    with c2:
+        mood = st.selectbox("Current Mood*", ["--Select--", "Happy", "Stressed", "Tired", "Calm"])
+        sleep = st.slider("Sleep Hours*", 0, 12, 7)
+        symptoms = st.multiselect("Health Concerns*", ["None", "Headache", "Body Pain", "Fatigue", "Digestion Issues"])
 
-# ---------- REPORT GENERATION ----------
-st.divider()
-if st.button("🚀 Finalize & Download Medical Report"):
-    with st.spinner("Generating Report..."):
-        # Save to CSV
-        with open("health_logs.csv", "a", newline="") as f:
-            csv.writer(f).writerow([name, age, gender, risk_percent, date.today()])
+    submit_button = st.form_submit_button("🚀 Generate Wellness Report")
+
+# --- 4. VALIDATION & DASHBOARD ---
+if submit_button:
+    # Strict validation check
+    if not name or gender == "--Select--" or mood == "--Select--" or not symptoms:
+        st.error("⚠️ Error: All fields marked with * are required to generate your plan.")
+    else:
+        st.success(f"Form Submitted! Generating plan for {name}...")
         
-        # PDF logic
+        # Risk Metric
+        risk_level = "Low" if "None" in symptoms else "Moderate"
+        st.divider()
+        st.subheader("📊 Your AI Health Analysis")
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            st.metric("Health Risk Score", risk_level)
+        with col_m2:
+            st.info(f"💡 AI Insight: Given your {mood} mood, we recommend focusing on 'Pranayama' (breathing) alongside your yoga poses.")
+
+        # 7-Day Plan Display
+        st.subheader("📅 Step 2: Your 7-Day Yoga & Food Plan")
+        day_tabs = st.tabs(list(weekly_data.keys()))
+        for idx, day in enumerate(weekly_data.keys()):
+            with day_tabs[idx]:
+                col_img, col_txt = st.columns([1, 1.5])
+                with col_img:
+                    st.image(weekly_data[day]["Img"], caption=weekly_data[day]["Yoga"], use_container_width=True)
+                with col_txt:
+                    st.markdown(f"#### 🧘 Yoga: {weekly_data[day]['Yoga']}")
+                    st.write(f"**💪 Benefit:** {weekly_data[day]['Benefit']}")
+                    st.markdown(f"#### 🥗 Recommended Food: {weekly_data[day]['Food']}")
+                    st.caption("Tip: Ensure you stay hydrated throughout the day.")
+
+        # --- 5. PDF GENERATION ---
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial","B",16)
-        pdf.cell(0,10, f"Health Report: {name}", ln=True, align="C")
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(0, 10, f"Nutri-Sense Personal Report: {name}", ln=True, align='C')
         pdf.set_font("Arial", size=12)
-        pdf.cell(0,10, f"Date: {date.today()} | Risk Score: {risk_percent}%", ln=True)
-        pdf.ln(10)
-        pdf.multi_cell(0,10, f"AI Recommendation: {insight}")
+        pdf.cell(0, 10, f"Date: {date.today()} | Risk Level: {risk_level}", ln=True)
+        pdf.ln(5)
+        pdf.multi_cell(0, 10, f"Based on your profile (Mood: {mood}, Sleep: {sleep} hrs), a consistent {weekly_data['Monday']['Yoga']} practice is recommended.")
         
-        pdf_file = "NutriSense_Report.pdf"
-        pdf.output(pdf_file)
-        
-        with open(pdf_file, "rb") as f:
-            st.download_button("📥 Click Here to Download PDF", f, file_name=pdf_file)
-
-# ---------- MOBILE QR ----------
-st.sidebar.markdown("---")
-st.sidebar.subheader("📱 Mobile Access")
-qr_img = qrcode.make("https://your-app-link.streamlit.app")
-st.sidebar.image(qr_img.get_image(), caption="Scan to sync with phone")
+        pdf_output = pdf.output(dest='S').encode('latin-1')
+        st.download_button(label="📥 Download Detailed PDF Report", data=pdf_output, file_name=f"Report_{name}.pdf", mime="application/pdf")
