@@ -5,7 +5,7 @@ from datetime import date
 from io import BytesIO
 
 # --- 1. PAGE CONFIG & THEME ---
-st.set_page_config(page_title="Nutri-Sense AI", layout="wide", page_icon="🧘")
+st.set_page_config(page_title="Nutri-Sense Health", layout="wide", page_icon="🌿")
 st.markdown("""
     <style>
     .main { background-color: #f9fbf9; }
@@ -15,23 +15,23 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🧘 Nutri-Sense: AI Health & Yoga Guide")
-st.info("Public Access: No sign-in required. Please complete all fields to generate your 7-day plan.")
+st.title("🌿 Nutri-Sense: Lifestyle & Yoga Guide")
+st.info("Public Access: No sign-in required. Please complete all fields to generate your 7-day wellness plan.")
 
 # --- 2. 7-DAY WELLNESS DATASET ---
 weekly_data = {
-    "Monday": {"Yoga": "Tree Pose" , "Food": "Oats & Berries", "Benefit": "Improves balance."},
-    "Tuesday": {"Yoga": "Cobra Pose", "Food": "Quinoa Salad", "Benefit": "Strengthens spine."},
-    "Wednesday": {"Yoga": "Warrior II", "Food": "Lentil Soup", "Benefit": "Increases stamina."},
-    "Thursday": {"Yoga": "Triangle Pose",  "Food": "Grilled Tofu", "Benefit": "Relieves back pain."},
-    "Friday": {"Yoga": "Child's Pose",  "Food": "Sweet Potato", "Benefit": "Calms the mind."},
-    "Saturday": {"Yoga": "Plank Pose", "Food": "Greek Yogurt", "Benefit": "Builds core strength."},
-    "Sunday": {"Yoga": "Corpse Pose", "Food": "Veggie Stir-fry", "Benefit": "Total relaxation."}
+    "Monday": {"Yoga": "Tree Pose" , "Food": "Oats & Berries", "Benefit": "Improves balance and focus."},
+    "Tuesday": {"Yoga": "Cobra Pose", "Food": "Quinoa Salad", "Benefit": "Strengthens the spine and relieves tension."},
+    "Wednesday": {"Yoga": "Warrior II", "Food": "Lentil Soup", "Benefit": "Increases muscular endurance."},
+    "Thursday": {"Yoga": "Triangle Pose",  "Food": "Grilled Tofu", "Benefit": "Relieves back stiffness and stretches hips."},
+    "Friday": {"Yoga": "Child's Pose",  "Food": "Sweet Potato", "Benefit": "Calms the nervous system and neck."},
+    "Saturday": {"Yoga": "Plank Pose", "Food": "Greek Yogurt", "Benefit": "Builds core strength and improves posture."},
+    "Sunday": {"Yoga": "Corpse Pose", "Food": "Veggie Stir-fry", "Benefit": "Allows for total body recovery."}
 }
 
 # --- 3. REQUIRED FORM ---
 with st.form("health_form"):
-    st.subheader("📋 Step 1: Health Profile")
+    st.subheader("📋 Step 1: Wellness Profile")
     col1, col2 = st.columns(2)
     with col1:
         name = st.text_input("Full Name*")
@@ -41,7 +41,7 @@ with st.form("health_form"):
         mood = st.selectbox("Mood*", ["Select", "Happy", "Stressed", "Tired", "Sad"])
         sleep = st.slider("Sleep (Hours)*", 0, 12, 7)
     
-    st.write("**Select All Current Health Concerns* (Multiple allowed)**")
+    st.write("**Select Current Health Concerns* (Multiple allowed)**")
     all_concerns = [
         "None / General Wellness", "Hair fall", "Eye issue", "Headache", 
         "Pigmentation", "Heart discomfort", "Leg pain", "Infection", 
@@ -56,69 +56,66 @@ if submit:
     if not name or gender == "Select" or mood == "Select" or not selected_concerns:
         st.error("⚠️ All fields marked with * are required.")
     else:
-        st.success(f"Plan generated for {name}!")
+        st.success(f"Wellness Plan successfully generated for {name}!")
         
-        # AI Insight Logic
-        insight_title = "General Wellness"
-        insight_desc = "Maintain a balanced diet and stay hydrated."
+        # Insight Logic
+        insight_title = "Standard Lifestyle Guidance"
+        insight_desc = "Prioritize a balanced diet, consistent hydration, and mindful movement."
         
         if "Hair fall" in selected_concerns or "PCOS" in selected_concerns:
-            insight_title = "Hormonal & Nutritional Support"
-            insight_desc = "Focus on Iron-rich foods (Spinach, Beets) and high-quality Protein. Avoid processed sugars."
+            insight_title = "Nutritional Focus: Hormonal Support"
+            insight_desc = "Integrate iron-rich foods (Spinach, Beets) and lean proteins. Limit refined sugars to stabilize energy."
         elif "Eye issue" in selected_concerns:
-            insight_title = "Ocular Health"
-            insight_desc = "Increase Vitamin A intake (Carrots, Sweet Potatoes). Practice eye-rolling yoga exercises."
+            insight_title = "Nutritional Focus: Ocular Health"
+            insight_desc = "Enhance intake of Vitamin A (Carrots, Sweet Potatoes). Practice distance-viewing exercises to reduce strain."
         elif "Heart discomfort" in selected_concerns:
-            insight_title = "Cardiovascular Care"
-            insight_desc = "Prioritize Omega-3 fatty acids and low-sodium meals. Focus on deep breathing."
+            insight_title = "Nutritional Focus: Cardiovascular Support"
+            insight_desc = "Prioritize healthy fats (Omega-3) and reduce processed sodium. Focus on gentle, rhythmic breathing."
         
-        st.subheader("📊 Your AI Health Analysis")
+        st.subheader("📊 Wellness Analysis")
         st.info(f"💡 **{insight_title}:** {insight_desc}")
 
         st.subheader("📅 Step 2: Your 7-Day Plan")
         tabs = st.tabs(list(weekly_data.keys()))
         for i, day in enumerate(weekly_data.keys()):
             with tabs[i]:
-                st.markdown(f"#### 🧘 {weekly_data[day]['Yoga']}")
-                st.write(f"**🥗 Diet:** {weekly_data[day]['Food']}")
-                st.write(f"**💪 Why:** {weekly_data[day]['Benefit']}")
+                st.markdown(f"#### 🧘 Yoga Practice: {weekly_data[day]['Yoga']}")
+                st.write(f"**🥗 Nutrition Goal:** {weekly_data[day]['Food']}")
+                st.write(f"**💪 Intended Benefit:** {weekly_data[day]['Benefit']}")
 
-        # --- 5. ENHANCED PDF GENERATION ---
+        # --- 5. PDF GENERATION ---
         pdf = FPDF()
         pdf.add_page()
         
         # Header
         pdf.set_font("Arial", 'B', 18)
-        pdf.set_text_color(30, 70, 30)
-        pdf.cell(0, 15, "Nutri-Sense AI Wellness Report", ln=True, align='C')
+        pdf.set_text_color(27, 94, 32)
+        pdf.cell(0, 15, "Nutri-Sense Wellness & Lifestyle Report", ln=True, align='C')
         
-        # User Info Section
+        # User Info
         pdf.set_font("Arial", 'B', 12)
         pdf.set_text_color(0, 0, 0)
         pdf.cell(0, 10, f"Name: {name} | Age: {age} | Date: {date.today()}", ln=True)
         pdf.cell(0, 10, f"Primary Concerns: {', '.join(selected_concerns)}", ln=True)
         pdf.ln(5)
         
-        # AI Explanation Section
-        pdf.set_fill_color(240, 245, 240)
+        # Insight Section
+        pdf.set_fill_color(245, 245, 245)
         pdf.set_font("Arial", 'B', 14)
-        pdf.cell(0, 10, f"AI Analysis: {insight_title}", ln=True, fill=True)
+        pdf.cell(0, 10, f"Recommendation: {insight_title}", ln=True, fill=True)
         pdf.set_font("Arial", '', 12)
-        pdf.multi_cell(0, 8, f"Based on your profile, our AI suggests: {insight_desc}. Following a structured sleep cycle of {sleep} hours is vital for recovery.")
+        pdf.multi_cell(0, 8, f"Based on the lifestyle profile provided: {insight_desc}. Consistent rest of {sleep} hours is highly recommended for recovery.")
         pdf.ln(5)
         
-        # Weekly Schedule Table
+        # Weekly Table
         pdf.set_font("Arial", 'B', 14)
-        pdf.cell(0, 10, "Your 7-Day Yoga & Nutrition Schedule", ln=True)
+        pdf.cell(0, 10, "Personalized 7-Day Schedule", ln=True)
         pdf.set_font("Arial", 'B', 10)
-        
-        # Table Header
-        pdf.set_fill_color(200, 220, 200)
+        pdf.set_fill_color(230, 235, 230)
         pdf.cell(30, 10, "Day", 1, 0, 'C', True)
-        pdf.cell(60, 10, "Yoga Pose", 1, 0, 'C', True)
-        pdf.cell(100, 10, "Recommended Nutrition", 1, 1, 'C', True)
+        pdf.cell(60, 10, "Yoga Practice", 1, 0, 'C', True)
+        pdf.cell(100, 10, "Nutrition Goal", 1, 1, 'C', True)
         
-        # Table Content
         pdf.set_font("Arial", '', 10)
         for day, details in weekly_data.items():
             pdf.cell(30, 10, day, 1)
@@ -126,12 +123,15 @@ if submit:
             pdf.cell(100, 10, details['Food'], 1, 1)
         
         pdf.ln(10)
-        pdf.set_font("Arial", 'I', 10)
-        pdf.multi_cell(0, 5, "Disclaimer: This report is generated by AI for educational purposes. Consult a doctor before starting new health regimes.")
+        pdf.set_font("Arial", 'B', 10)
+        pdf.cell(0, 5, "Official Disclaimer:", ln=True)
+        pdf.set_font("Arial", '', 9)
+        pdf.multi_cell(0, 5, "The information provided in this report is for general educational and wellness purposes only. It is not intended to serve as medical advice, diagnosis, or treatment. Users should consult with a qualified healthcare professional before implementing any dietary changes or starting a new exercise regimen. Nutri-Sense and its creators are not responsible for any health outcomes or adverse effects resulting from the use of this information.")
         
         # Download
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
-        st.download_button("📥 Download Detailed Report (PDF)", data=pdf_bytes, file_name=f"{name}_Report.pdf")
+        st.download_button("📥 Download Official Report (PDF)", data=pdf_bytes, file_name=f"{name}_Report.pdf")
 
 st.divider()
-st.caption("Nutri-Sense AI 2026 | No Personal Data is stored permanently on this server.")
+st.caption("**Legal Notice:** This tool provides wellness suggestions based on user-reported data. It is not a clinical assessment tool. All content is for educational use only.")
+
