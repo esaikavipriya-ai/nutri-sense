@@ -20,13 +20,13 @@ st.info("Public Access: No sign-in required. Please complete all fields to gener
 
 # --- 2. 7-DAY WELLNESS DATASET ---
 weekly_data = {
-    "Monday": {"Yoga": "Tree Pose", "Img": "https://www.istockphoto.com/photo/asian-indian-woman-performing-yoga-asana-or-meditation-in-tree-position-gm1400779943-454246259?utm_source=unsplash&utm_medium=affiliate&utm_campaign=srp_photos_bottom&utm_content=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2F%2522Tree-Pose%2522&utm_term=%22Tree+Pose%22%3A%3Aaffiliate-signature-content%3Acontrol%3A609c0245-5feb-4590-b3a6-de946beaca66", "Food": "Oats & Berries", "Benefit": "Improves balance."},
-    "Tuesday": {"Yoga": "Cobra Pose", "Img": "https://images.unsplash.com", "Food": "Quinoa Salad", "Benefit": "Strengthens spine."},
-    "Wednesday": {"Yoga": "Warrior II", "Img": "https://images.unsplash.com", "Food": "Lentil Soup", "Benefit": "Increases stamina."},
-    "Thursday": {"Yoga": "Triangle Pose", "Img": "https://images.unsplash.com", "Food": "Grilled Tofu", "Benefit": "Relieves back pain."},
-    "Friday": {"Yoga": "Child's Pose", "Img": "https://images.unsplash.com", "Food": "Sweet Potato", "Benefit": "Calms the mind."},
-    "Saturday": {"Yoga": "Plank Pose", "Img": "https://images.unsplash.com", "Food": "Greek Yogurt", "Benefit": "Builds core strength."},
-    "Sunday": {"Yoga": "Corpse Pose", "Img": "https://images.unsplash.com", "Food": "Veggie Stir-fry", "Benefit": "Total relaxation."}
+    "Monday": {"Yoga": "Tree Pose" , "Food": "Oats & Berries", "Benefit": "Improves balance."},
+    "Tuesday": {"Yoga": "Cobra Pose", "Food": "Quinoa Salad", "Benefit": "Strengthens spine."},
+    "Wednesday": {"Yoga": "Warrior II", "Food": "Lentil Soup", "Benefit": "Increases stamina."},
+    "Thursday": {"Yoga": "Triangle Pose",  "Food": "Grilled Tofu", "Benefit": "Relieves back pain."},
+    "Friday": {"Yoga": "Child's Pose",  "Food": "Sweet Potato", "Benefit": "Calms the mind."},
+    "Saturday": {"Yoga": "Plank Pose", "Food": "Greek Yogurt", "Benefit": "Builds core strength."},
+    "Sunday": {"Yoga": "Corpse Pose", "Food": "Veggie Stir-fry", "Benefit": "Total relaxation."}
 }
 
 # --- 3. REQUIRED FORM WITH ALL CONCERNS ---
@@ -104,4 +104,5 @@ st.caption("""
 **Medical Disclaimer:** This application provides general wellness information only. It is **not** a substitute for professional medical advice. Always consult a qualified healthcare provider before starting any new exercise or diet.
 **Copyright Note:** Yoga poses are public domain; associated images are sourced from royalty-free platforms (Unsplash/Pexels) under Creative Commons licenses.
 """)
+
 
