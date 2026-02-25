@@ -15,9 +15,9 @@ st.set_page_config(page_title="Nutri_Sense", layout="wide")
 # ---------- LANGUAGE ----------
 lang = st.sidebar.selectbox("🌐 Language", ["English", "Tamil", "Hindi"])
 title_text = {
-    "English": "🌸 Nutri_Sense",
-    "Tamil": "🌸 Nutri_Sense — புத்திசாலி ஊட்டச்சத்து உதவி",
-    "Hindi": "🌸 Nutri_Sense — स्मार्ट पोषण सहायक"
+    "English": " Nutri_Sense",
+    "Tamil": "Nutri_Sense — ஊட்டச்சத்து உதவி",
+    "Hindi": "Nutri_Sense — स्मार्ट पोषण सहायक"
 }
 st.title(title_text.get(lang, "Nutri_Sense"))
 
