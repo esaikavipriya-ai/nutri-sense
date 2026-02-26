@@ -1,5 +1,5 @@
-python
 import streamlit as st
+import pandas as pd
 from fpdf import FPDF
 from datetime import date
 
@@ -142,6 +142,7 @@ if submit:
         )
 
 st.caption("⚠️ Educational wellness guidance only. Consult professionals for medical advice.")
+
 
 
 
