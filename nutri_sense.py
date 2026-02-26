@@ -142,5 +142,6 @@ if submit:
         )
 
 st.caption("⚠️ Educational wellness guidance only. Consult professionals for medical advice.")
-```
+
+
 
