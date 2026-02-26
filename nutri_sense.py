@@ -1,11 +1,11 @@
 import streamlit as st
 from fpdf import FPDF
 
-# ---------------- MULTILINGUAL DATA (10 SAMPLE CONCERNS) ----------------
+# ---------------- MULTILINGUAL DATA ----------------
 data_master = {
     "Hair Fall": {
         "EN": {"Yoga": "Adho Mukha Svanasana, Sarvangasana", "Food": "Moringa leaves, Amla, Curry leaves", "Reason": "Scalp circulation"},
-        "TA": {"Yoga": "அதோ முக ஸ்வனாசனம், சர்வாங்காசனம்", "Food": "முருங்கைக்கீரை, நெல்லிக்காய், கறிவேப்பிலை", "Reason": "தலைப்பகுதிக்கு இரத்த ஓட்டம்"},
+        "TA": {"Yoga": "அதோ முக ஸ்வனாசனம், சர்வாங்காசனம்", "Food": "முருங்கைக்கீரை, நெல்லிக்காய், கறிவேப்பிலை", "Reason": "தலைப்பகுதிக்கு இரத்த ஓட்டம்"}, 
         "HI": {"Yoga": "अधो मुख श्वानासन, सर्वांगासन", "Food": "सहजन की पत्तियां, आंवला, करी पत्ता", "Reason": "स्कैल्प में रक्त संचार"}
     },
     "Eye Strain": {
@@ -125,7 +125,7 @@ if submit:
         # ---------------- PDF GENERATION ----------------
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font('Arial', size=12)  # regular font
+        pdf.set_font('Arial', size=12)
 
         # Title
         pdf.cell(0, 10, f"🌿 Wellness Report: {name}", ln=True, align='C')
@@ -159,11 +159,11 @@ if submit:
         pdf.ln(10)
         pdf.cell(0,10,L['copyright'],ln=True,align='C')
 
-        # Download button
-        pdf_bytes = pdf.output(dest='S').encode('latin1')
+        # ---------------- DOWNLOAD PDF ----------------
+        pdf_bytes = pdf.output(dest='S').encode('utf-8')  # ✅ utf-8 for multilingual + emojis
         st.download_button("📥 Download Wellness Report (PDF)", pdf_bytes, f"{name}_Wellness_Report.pdf")
 
-        # ---------- Rating AFTER download ----------
+        # ---------------- RATING AFTER DOWNLOAD ----------------
         st.subheader("⭐ Rate Your Health / உங்கள் ஆரோக்கியம் / अपनी सेहत")
         rating = st.radio(
             "Choose your rating",
