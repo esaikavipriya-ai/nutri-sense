@@ -3,130 +3,99 @@ import pandas as pd
 from fpdf import FPDF
 from datetime import date
 
-# ---------------- PAGE CONFIG ----------------
-st.set_page_config(page_title="Nutri-Sense Health", layout="wide", page_icon="🌿")
-
-st.markdown("""
-<style>
-.stApp { background: linear-gradient(135deg, #f1f8e9 0%, #ffffff 50%, #e8f5e9 100%); }
-.stButton>button { width: 100%; border-radius: 10px; background-color: #1b5e20; color: white; height: 3.5em; font-weight: bold; }
-h1 { color: #1b5e20; text-align: center; }
-.footer-text { text-align: center; color: #666; font-size: 12px; margin-top: 50px; border-top: 1px solid #ddd; padding-top: 10px; }
-</style>
-""", unsafe_allow_html=True)
-
-st.title("🌿 Nutri-Sense: Tamil Traditional Wellness (Unisex)")
-
-# ---------------- UNISEX CONCERN DATA (Tamil Traditional) ----------------
-concern_plan = {
-    "Hair Fall": {"Yoga": "Downward Dog, Camel Pose", "Food": "Murungai Keerai (Moringa), Karupatti (Palm Jaggery)", "Reason": "Iron & Antioxidants for scalp health"},
-    "Eye Strain": {"Yoga": "Palming, Trataka", "Food": "Carrot Poriyal, Agathi Keerai, Papaya", "Reason": "High Vitamin A & Lutein"},
-    "Stress/Headache": {"Yoga": "Child Pose, Nadi Shodhana", "Food": "Sukku Coffee (Dry Ginger), Coconut Water", "Reason": "Natural electrolytes and anti-inflammatory"},
-    "Hormonal Balance (F)": {"Yoga": "Butterfly Pose", "Food": "Ellu Urundai (Sesame), Fenugreek Kali", "Reason": "Regulates endocrine function"},
-    "Prostate & Vitality (M)": {"Yoga": "Virasana (Hero Pose), Baddha Konasana", "Food": "Pumpkin Seeds, Watermelon, Gooseberry (Amla)", "Reason": "Zinc and Lycopene support"},
-    "Muscle Recovery": {"Yoga": "Pigeon Pose, Legs up wall", "Food": "Sundal (Chickpeas), Black Urad Dal Kali", "Reason": "High protein for tissue repair"},
-    "Digestive Issues": {"Yoga": "Vajrasana, Pawanmuktasana", "Food": "Buttermilk (Neer Mor), Jeera Water, Ginger", "Reason": "Probiotics and digestive enzymes"},
-    "Joint/Body Pain": {"Yoga": "Cat-Cow Stretch", "Food": "Mudakathan Keerai, Turmeric Milk", "Reason": "Anti-inflammatory and joint lubrication"}
+# ---------------- MULTILINGUAL DICTIONARY ----------------
+translations = {
+    "English": {
+        "title": "🌿 Nutri-Sense: Wellness Guide",
+        "lang_select": "Choose Language / மொழியைத் தேர்ந்தெடுக்கவும் / भाषा चुनें",
+        "name": "Full Name*",
+        "age": "Age*",
+        "gender": "Gender*",
+        "concerns": "Health Concerns*",
+        "submit": "🚀 Generate Wellness Report",
+        "report_title": "Nutri-Sense Wellness Report",
+        "disclaimer": "DISCLAIMER: This report is for educational purposes only and is not medical advice.",
+        "copyright": "All Rights Reserved. ©",
+        "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    },
+    "Tamil": {
+        "title": "🌿 நியூட்ரி-சென்ஸ்: ஆரோக்கிய வழிகாட்டி",
+        "lang_select": "மொழியைத் தேர்ந்தெடுக்கவும்",
+        "name": "முழு பெயர்*",
+        "age": "வயது*",
+        "gender": "பாலினம்*",
+        "concerns": "ஆரோக்கிய பிரச்சனைகள்*",
+        "submit": "🚀 அறிக்கையை உருவாக்கு",
+        "report_title": "நியூட்ரி-சென்ஸ் ஆரோக்கிய அறிக்கை",
+        "disclaimer": "பொறுப்புத் துறப்பு: இந்த அறிக்கை கல்வி நோக்கங்களுக்காக மட்டுமே, மருத்துவ ஆலோசனை அல்ல.",
+        "copyright": "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை. ©",
+        "days": ["திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி", "ஞாயிறு"]
+    },
+    "Hindi": {
+        "title": "🌿 न्यूट्री-सेंस: जीवनशैली और योग मार्गदर्शिका",
+        "lang_select": "भाषा चुनें",
+        "name": "पूरा नाम*",
+        "age": "आयु*",
+        "gender": "लिंग*",
+        "concerns": "स्वास्थ्य संबंधी चिंताएं*",
+        "submit": "🚀 रिपोर्ट तैयार करें",
+        "report_title": "न्यूट्री-सेंस स्वास्थ्य रिपोर्ट",
+        "disclaimer": "अस्वीकरण: यह रिपोर्ट केवल शैक्षिक उद्देश्यों के लिए है और चिकित्सा सलाह नहीं है।",
+        "copyright": "सर्वाधिकार सुरक्षित। ©",
+        "days": ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]
+    }
 }
 
-# ---------------- TAMIL WEEKLY ROUTINE TABLE ----------------
-# Updated to include Tamil traditional breakfast/lunch concepts
-weekly_routine = [
-    ["Day", "Yoga Practice", "Tamil Traditional Nutrition"],
-    ["Monday", "Tree Pose (Vrikshasana)", "Kambu Koozh (Pearl Millet) & Small Onions"],
-    ["Tuesday", "Cobra Pose (Bhujangasana)", "Ragi Dosa with Groundnut Chutney"],
-    ["Wednesday", "Warrior II (Virabhadrasana)", "Rice with Kollu Rasam (Horsegram)"],
-    ["Thursday", "Triangle Pose (Trikonasana)", "Varagu Rice (Kodo Millet) & Sambhar"],
-    ["Friday", "Child Pose (Balasana)", "Vegetable Upma & Pomegranate"],
-    ["Saturday", "Plank Pose (Phalakasana)", "Sprouted Moong Dal Sundal & Buttermilk"],
-    ["Sunday", "Corpse Pose (Shavasana)", "Traditional Brown Rice & Keerai Kootu"]
-]
+# ---------------- DATA ----------------
+concern_data = {
+    "English": {"Hair Fall": "Murungai Keerai (Moringa)", "Eye Strain": "Carrot Poriyal", "PCOS": "Flax Seeds"},
+    "Tamil": {"Hair Fall": "முருங்கைக்கீரை, கருப்பட்டி", "Eye Strain": "கேரட் பொரியல், அகத்திக்கீரை", "PCOS": "வெந்தயக்களி"},
+    "Hindi": {"Hair Fall": "सहजन (मुरुंगई), गुड़", "Eye Strain": "गाजर की सब्जी", "PCOS": "अलसी के बीज"}
+}
 
-# ---------------- USER INPUT FORM ----------------
-with st.form("health_form"):
-    st.subheader("📋 Wellness Profile")
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("Full Name*")
-        age = st.number_input("Age*", 10, 100, 30)
-    with col2:
-        gender = st.selectbox("Gender*", ["Select", "Male", "Female", "Other"])
-        concerns = st.multiselect("Health Concerns*", list(concern_plan.keys()))
-    
-    submit = st.form_submit_button("🚀 Generate Unisex Wellness Report")
+# ---------------- APP CONFIG ----------------
+st.set_page_config(page_title="Nutri-Sense", page_icon="🌿")
+lang = st.sidebar.selectbox(translations["English"]["lang_select"], ["English", "Tamil", "Hindi"])
+t = translations[lang]
 
-# ---------------- REPORT GENERATION ----------------
+st.title(t["title"])
+
+with st.form("wellness_form"):
+    name = st.text_input(t["name"])
+    age = st.number_input(t["age"], 10, 100, 30)
+    selected_concerns = st.multiselect(t["concerns"], list(concern_data[lang].keys()))
+    submit = st.form_submit_button(t["submit"])
+
 if submit:
-    if not name or gender == "Select" or not concerns:
-        st.error("⚠️ Please provide your name, gender, and at least one health concern.")
-    else:
-        st.success(f"✅ Report successfully generated for {name}")
-        
-        # Display Personalized Plan
-        st.subheader("🎯 Personalized Recommendations")
-        for c in concerns:
-            with st.expander(f"Plan for: {c}", expanded=True):
-                st.write(f"🧘 **Yoga:** {concern_plan[c]['Yoga']}")
-                st.write(f"🍛 **Tamil Food:** {concern_plan[c]['Food']}")
-                st.caption(f"💡 Why: {concern_plan[c]['Reason']}")
+    st.subheader(t["report_title"])
+    for c in selected_concerns:
+        st.write(f"🎯 **{c}:** {concern_data[lang][c]}")
 
-        # Display Weekly Table
-        st.subheader("📅 Tamil Traditional Weekly Nutrition Table")
-        df_week = pd.DataFrame(weekly_routine[1:], columns=weekly_routine[0])
-        st.table(df_week)
+    # ---------------- PDF GENERATION ----------------
+    # Note: To print Tamil/Hindi in PDF, you MUST download 'FreeSans.ttf' 
+    # from GNU FreeFont and place it in your project folder.
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # FPDF2 supports Unicode via .add_font()
+    try:
+        pdf.add_font('FreeSans', '', 'FreeSans.ttf', uni=True)
+        pdf.set_font('FreeSans', '', 14)
+    except:
+        pdf.set_font('Arial', '', 12) # Fallback if font file missing
 
-        # ---------------- PDF LOGIC ----------------
-        pdf = FPDF()
-        pdf.add_page()
-        
-        # Header
-        pdf.set_font("Arial", 'B', 16)
-        pdf.cell(0, 10, "Nutri-Sense: Personalized Wellness Report", ln=True, align='C')
-        pdf.set_font("Arial", '', 10)
-        pdf.cell(0, 10, f"Issued to: {name} | Gender: {gender} | Date: {date.today()}", ln=True, align='C')
-        pdf.ln(5)
+    pdf.cell(0, 10, t["report_title"], ln=True, align='C')
+    pdf.cell(0, 10, f"{t['name']}: {name} | {t['age']}: {age}", ln=True)
+    
+    for c in selected_concerns:
+        pdf.multi_cell(0, 10, f"{c}: {concern_data[lang][c]}")
+    
+    pdf.ln(10)
+    pdf.set_font_size(8)
+    pdf.multi_cell(0, 5, t["disclaimer"])
+    pdf.cell(0, 10, f"{t['copyright']} {date.today().year} Nutri-Sense", ln=True, align='C')
 
-        # Personalized Concerns
-        pdf.set_font("Arial", 'B', 12)
-        pdf.cell(0, 10, "1. Targeted Health Solutions", ln=True)
-        pdf.set_font("Arial", '', 10)
-        for c in concerns:
-            pdf.multi_cell(0, 7, f"Concern: {c}\nYoga: {concern_plan[c]['Yoga']}\nFood: {concern_plan[c]['Food']}\n")
-            pdf.ln(2)
+    pdf_bytes = pdf.output(dest='S').encode('latin-1', 'replace')
+    st.download_button("📥 Download PDF", pdf_bytes, "Report.pdf")
 
-        # Weekly Table in PDF
-        pdf.set_font("Arial", 'B', 12)
-        pdf.cell(0, 10, "2. Tamil Traditional Weekly Plan", ln=True)
-        pdf.set_font("Arial", 'B', 9)
-        
-        # Table Header
-        pdf.cell(25, 10, "Day", 1)
-        pdf.cell(65, 10, "Yoga Practice", 1)
-        pdf.cell(90, 10, "Nutrition Focus", 1)
-        pdf.ln()
-        
-        # Table Rows
-        pdf.set_font("Arial", '', 8)
-        for row in weekly_routine[1:]:
-            pdf.cell(25, 10, row[0], 1)
-            pdf.cell(65, 10, row[1], 1)
-            pdf.cell(90, 10, row[2], 1)
-            pdf.ln()
-
-        # Legal Section
-        pdf.ln(10)
-        pdf.set_font("Arial", 'I', 8)
-        pdf.multi_cell(0, 5, "DISCLAIMER: This report is for educational and lifestyle guidance only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with a physician or qualified healthcare provider regarding a medical condition.")
-        pdf.ln(2)
-        pdf.cell(0, 10, f"Copyright (c) {date.today().year} Nutri-Sense Wellness. All Rights Reserved.", ln=True, align='C')
-
-        pdf_output = pdf.output(dest='S').encode('latin-1')
-        st.download_button("📥 Download Official PDF Report", pdf_output, file_name=f"NutriSense_{name}.pdf")
-
-# ---------------- FOOTER ----------------
-st.markdown(f"""
-<div class="footer-text">
-    <p><b>Disclaimer:</b> Educational wellness guidance only. Consult a doctor for medical issues.</p>
-    <p>© {date.today().year} Nutri-Sense Health. All Rights Reserved. Protected by Copyright Law.</p>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(f"--- \n {t['disclaimer']} \n\n {t['copyright']} {date.today().year} Nutri-Sense")
