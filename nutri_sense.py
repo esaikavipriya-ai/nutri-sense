@@ -49,15 +49,6 @@ data_master = {
         "HI": {"Yoga": "उष्ट्रासन, सर्वांगासन", "Food": "आयोडीन युक्त नमक, अखरोट, मूंग दाल", "Reason": "हार्मोन संतुलन"}
     }
 }
-    # ----------  Add star rating ----------
-    st.subheader("⭐ Rate Your Health / உங்கள் ஆரோக்கியம் / अपनी सेहत")
-    rating = st.radio(
-        "Choose your rating",
-        ["★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★"],
-        index=2
-    )
-
-    submit = st.form_submit_button("🚀 Generate Full Plan")  # Line ~59
 
 # ---------------- ALERTS & MOTIVATION ----------------
 doctor_alert_text = {
@@ -108,6 +99,15 @@ with st.form("user_form"):
     with col2:
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
         selected = st.multiselect("Issues", list(data_master.keys()))
+    
+    # ---------- Star Rating ----------
+    st.subheader("⭐ Rate Your Health / உங்கள் ஆரோக்கியம் / अपनी सेहत")
+    rating = st.radio(
+        "Choose your rating",
+        ["★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★"],
+        index=2
+    )
+    
     submit = st.form_submit_button("🚀 Generate Full Plan")
 
 # ---------------- DISPLAY PLAN ----------------
@@ -130,6 +130,7 @@ if submit:
         st.info(hydration_text[lang_code])
         st.caption(disclaimer_text[lang_code])
         st.success(motivation_text[lang_code])
+        st.info(f"🌟 Your self-assessed health rating: {rating}")
 
         # ---------------- PDF GENERATION ----------------
         pdf = FPDF()
@@ -165,6 +166,8 @@ if submit:
         pdf.multi_cell(0,8,disclaimer_text[lang_code])
         pdf.ln(2)
         pdf.multi_cell(0,8,motivation_text[lang_code])
+        pdf.ln(2)
+        pdf.multi_cell(0,8,f"🌟 Self-assessed Health Rating: {rating}")
 
         pdf.ln(10)
         pdf.cell(0,10,L['copyright'],ln=True,align='C')
