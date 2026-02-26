@@ -3,99 +3,102 @@ import pandas as pd
 from fpdf import FPDF
 from datetime import date
 
-# ---------------- MULTILINGUAL DICTIONARY ----------------
+# ---------------- MULTILINGUAL DATA ----------------
 translations = {
     "English": {
-        "title": "🌿 Nutri-Sense: Wellness Guide",
-        "lang_select": "Choose Language / மொழியைத் தேர்ந்தெடுக்கவும் / भाषा चुनें",
-        "name": "Full Name*",
-        "age": "Age*",
-        "gender": "Gender*",
-        "concerns": "Health Concerns*",
-        "submit": "🚀 Generate Wellness Report",
-        "report_title": "Nutri-Sense Wellness Report",
-        "disclaimer": "DISCLAIMER: This report is for educational purposes only and is not medical advice.",
-        "copyright": "All Rights Reserved. ©",
-        "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        "title": "🌿 Nutri-Sense: Global Wellness Guide",
+        "labels": {"Yoga": "Yoga", "Food": "Traditional Food", "Benefit": "Benefit", "Morning": "Morning", "Breakfast": "Breakfast", "Lunch": "Lunch", "Dinner": "Dinner"},
+        "ui": {"lang": "Select Language", "name": "Name*", "age": "Age*", "gender": "Gender*", "concerns": "Health Concerns*", "submit": "🚀 Generate Full Plan", "download": "📥 Download PDF Report"},
+        "disclaimer": "DISCLAIMER: Educational purposes only. Consult a doctor. © 2025 Nutri-Sense.",
+        "gender_opts": ["Select", "Male", "Female", "Other"]
     },
     "Tamil": {
         "title": "🌿 நியூட்ரி-சென்ஸ்: ஆரோக்கிய வழிகாட்டி",
-        "lang_select": "மொழியைத் தேர்ந்தெடுக்கவும்",
-        "name": "முழு பெயர்*",
-        "age": "வயது*",
-        "gender": "பாலினம்*",
-        "concerns": "ஆரோக்கிய பிரச்சனைகள்*",
-        "submit": "🚀 அறிக்கையை உருவாக்கு",
-        "report_title": "நியூட்ரி-சென்ஸ் ஆரோக்கிய அறிக்கை",
-        "disclaimer": "பொறுப்புத் துறப்பு: இந்த அறிக்கை கல்வி நோக்கங்களுக்காக மட்டுமே, மருத்துவ ஆலோசனை அல்ல.",
-        "copyright": "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை. ©",
-        "days": ["திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி", "ஞாயிறு"]
+        "labels": {"Yoga": "யோகா", "Food": "பாரம்பரிய உணவு", "Benefit": "நன்மை", "Morning": "காலை (வெறும் வயிறு)", "Breakfast": "காலை உணவு", "Lunch": "மதிய உணவு", "Dinner": "இரவு உணவு"},
+        "ui": {"lang": "மொழியைத் தேர்ந்தெடுக்கவும்", "name": "பெயர்*", "age": "வயது*", "gender": "பாலினம்*", "concerns": "ஆரோக்கிய பிரச்சனைகள்*", "submit": "🚀 முழு அறிக்கையை உருவாக்கு", "download": "📥 அறிக்கையைப் பதிவிறக்கவும் (PDF)"},
+        "disclaimer": "பொறுப்புத் துறப்பு: கல்வி நோக்கங்களுக்காக மட்டுமே. மருத்துவ ஆலோசனைக்கு மருத்துவரை அணுகவும். © 2025 நியூட்ரி-சென்ஸ்.",
+        "gender_opts": ["தேர்ந்தெடு", "ஆண்", "பெண்", "மற்றவை"]
     },
     "Hindi": {
-        "title": "🌿 न्यूट्री-सेंस: जीवनशैली और योग मार्गदर्शिका",
-        "lang_select": "भाषा चुनें",
-        "name": "पूरा नाम*",
-        "age": "आयु*",
-        "gender": "लिंग*",
-        "concerns": "स्वास्थ्य संबंधी चिंताएं*",
-        "submit": "🚀 रिपोर्ट तैयार करें",
-        "report_title": "न्यूट्री-सेंस स्वास्थ्य रिपोर्ट",
-        "disclaimer": "अस्वीकरण: यह रिपोर्ट केवल शैक्षिक उद्देश्यों के लिए है और चिकित्सा सलाह नहीं है।",
-        "copyright": "सर्वाधिकार सुरक्षित। ©",
-        "days": ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]
+        "title": "🌿 न्यूट्री-सेंस: समग्र स्वास्थ्य मार्गदर्शिका",
+        "labels": {"Yoga": "योग", "Food": "पारंपरिक आहार", "Benefit": "लाभ", "Morning": "सुबह (खाली पेट)", "Breakfast": "नाश्ता", "Lunch": "दोपहर का भोजन", "Dinner": "रात का खाना"},
+        "ui": {"lang": "भाषा चुनें", "name": "नाम*", "age": "आयु*", "gender": "लिंग*", "concerns": "स्वास्थ्य संबंधी चिंताएं*", "submit": "🚀 पूर्ण रिपोर्ट तैयार करें", "download": "📥 पीडीएफ रिपोर्ट डाउनलोड करें"},
+        "disclaimer": "अस्वीकरण: केवल शैक्षिक उद्देश्यों के लिए। चिकित्सा सलाह के लिए डॉक्टर से परामर्श करें। © 2025 न्यूट्री-सेंस।",
+        "gender_opts": ["चुनें", "पुरुष", "महिला", "अन्य"]
     }
 }
 
-# ---------------- DATA ----------------
+# ---------------- EXPANDED CONCERN DATA (Unisex) ----------------
 concern_data = {
-    "English": {"Hair Fall": "Murungai Keerai (Moringa)", "Eye Strain": "Carrot Poriyal", "PCOS": "Flax Seeds"},
-    "Tamil": {"Hair Fall": "முருங்கைக்கீரை, கருப்பட்டி", "Eye Strain": "கேரட் பொரியல், அகத்திக்கீரை", "PCOS": "வெந்தயக்களி"},
-    "Hindi": {"Hair Fall": "सहजन (मुरुंगई), गुड़", "Eye Strain": "गाजर की सब्जी", "PCOS": "अलसी के बीज"}
+    "English": {
+        "Kidney Stones": {"Yoga": "Ustrasana (Camel Pose), Pawanmuktasana", "Food": "Coconut Water, Barley Water, Bottle Gourd sabzi", "Reason": "Helps flush toxins and prevents crystal formation."},
+        "Fatty Liver": {"Yoga": "Bhujangasana (Cobra), Mandukasana", "Food": "Turmeric, Cruciferous Veg (Broccoli), Green Tea", "Reason": "Stimulates liver enzymes and reduces fat accumulation."},
+        "Heart Health/Cholesterol": {"Yoga": "Surya Namaskar, Ardha Matsyendrasana", "Food": "Oats, Walnuts, Garlic, Flax seeds", "Reason": "Improves circulation and lowers LDL levels."},
+        "Arthritis/Joint Pain": {"Yoga": "Vajrasana, Marjariasana (Cat-Cow)", "Food": "Ginger, Turmeric Milk, Whole Grains", "Reason": "Reduces inflammation and keeps joints flexible."},
+        "Anemia": {"Yoga": "Sarvangasana, Anulom Vilom", "Food": "Dates, Moringa, Pomegranate", "Reason": "Increases iron absorption and blood oxygenation."}
+    },
+    "Tamil": {
+        "சிறுநீரகக் கல் (Kidney Stones)": {"Yoga": "உஷ்ட்ராசனம், பவனமுக்தாசனம்", "Food": "இளநீர், பார்லி கஞ்சி, சுரைக்காய் கூட்டு", "Reason": "நச்சுகளை வெளியேற்றி கல் உருவாவதைத் தடுக்கிறது."},
+        "கல்லீரல் ஆரோக்கியம் (Fatty Liver)": {"Yoga": "புஜங்காசனம், மண்டூகாசனம்", "Food": "மஞ்சள், காலிஃபிளவர், பச்சைத் தேயிலை (Green Tea)", "Reason": "கல்லீரல் கொழுப்பைக் குறைத்து என்சைம்களைத் தூண்டுகிறது."},
+        "இதய ஆரோக்கியம்/கொலஸ்ட்ரால்": {"Yoga": "சூரிய நமஸ்காரம், அர்த்த மத்ஸ்யேந்திராசனம்", "Food": "ஓட்ஸ், வால்நட்ஸ், பூண்டு, ஆளிவிதை", "Reason": "இரத்த ஓட்டத்தை சீராக்கி கெட்ட கொழுப்பைக் குறைக்கிறது."},
+        "மூட்டு வலி (Arthritis)": {"Yoga": "வஜ்ராசனம், பூனை-பசு நீட்சி", "Food": "இஞ்சி, மஞ்சள் பால், முழு தானியங்கள்", "Reason": "வீக்கத்தைக் குறைத்து மூட்டுகளை வலுவாக்குகிறது."}
+    },
+    "Hindi": {
+        "पथरी (Kidney Stones)": {"Yoga": "उष्ट्रासन, पवनमुक्तासन", "Food": "नारियल पानी, जौ का पानी, लौकी की सब्जी", "Reason": "विषाक्त पदार्थों को बाहर निकालने में मदद करता है."},
+        "फैटी लिवर (Fatty Liver)": {"Yoga": "भुजंगासन, मंडूकासन", "Food": "हल्दी, ब्रोकोली, ग्रीन टी", "Reason": "लिवर एंजाइम को सक्रिय करता है और वसा कम करता है."},
+        "हृदय स्वास्थ्य/कोलेस्ट्रॉल": {"Yoga": "सूर्य नमस्कार, अर्ध मत्स्येंद्रासन", "Food": "ओट्स, अखरोट, लहसुन, अलसी", "Reason": "रक्त संचार में सुधार और कोलेस्ट्रॉल कम करता है."},
+        "गठिया/जोड़ों का दर्द (Arthritis)": {"Yoga": "वज्रासन, मार्जरी आसन", "Food": "अदरक, हल्दी वाला दूध, साबुत अनाज", "Reason": "सूजन कम करता है और जोड़ों को लचीला बनाता है."}
+    }
 }
 
-# ---------------- APP CONFIG ----------------
-st.set_page_config(page_title="Nutri-Sense", page_icon="🌿")
-lang = st.sidebar.selectbox(translations["English"]["lang_select"], ["English", "Tamil", "Hindi"])
+# ---------------- APP INTERFACE ----------------
+st.set_page_config(page_title="Nutri-Sense", page_icon="🌿", layout="wide")
+lang = st.sidebar.selectbox(translations["English"]["ui"]["lang"], ["English", "Tamil", "Hindi"])
 t = translations[lang]
+cd = concern_data[lang]
 
 st.title(t["title"])
 
 with st.form("wellness_form"):
-    name = st.text_input(t["name"])
-    age = st.number_input(t["age"], 10, 100, 30)
-    selected_concerns = st.multiselect(t["concerns"], list(concern_data[lang].keys()))
-    submit = st.form_submit_button(t["submit"])
+    st.subheader(t["ui"]["name"])
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input(t["ui"]["name"])
+        age = st.number_input(t["ui"]["age"], 10, 100, 30)
+    with col2:
+        gender = st.selectbox(t["ui"]["gender"], t["gender_opts"])
+        selected = st.multiselect(t["ui"]["concerns"], list(cd.keys()))
+    submit = st.form_submit_button(t["ui"]["submit"])
 
 if submit:
-    st.subheader(t["report_title"])
-    for c in selected_concerns:
-        st.write(f"🎯 **{c}:** {concern_data[lang][c]}")
+    if not name or not selected:
+        st.error("⚠️ Please fill all fields.")
+    else:
+        st.success(f"Plan for {name}")
+        for c in selected:
+            with st.expander(c, expanded=True):
+                st.write(f"🧘 **{t['labels']['Yoga']}:** {cd[c]['Yoga']}")
+                st.write(f"🍛 **{t['labels']['Food']}:** {cd[c]['Food']}")
+                st.info(f"💡 {cd[c]['Reason']}")
 
-    # ---------------- PDF GENERATION ----------------
-    # Note: To print Tamil/Hindi in PDF, you MUST download 'FreeSans.ttf' 
-    # from GNU FreeFont and place it in your project folder.
-    pdf = FPDF()
-    pdf.add_page()
-    
-    # FPDF2 supports Unicode via .add_font()
-    try:
-        pdf.add_font('FreeSans', '', 'FreeSans.ttf', uni=True)
-        pdf.set_font('FreeSans', '', 14)
-    except:
-        pdf.set_font('Arial', '', 12) # Fallback if font file missing
+        # --- PDF Export (Requires FreeSans.ttf for Hindi/Tamil characters) ---
+        pdf = FPDF()
+        pdf.add_page()
+        try:
+            pdf.add_font('FreeSans', '', 'FreeSans.ttf', uni=True)
+            pdf.set_font('FreeSans', '', 12)
+        except:
+            pdf.set_font('Arial', '', 12)
 
-    pdf.cell(0, 10, t["report_title"], ln=True, align='C')
-    pdf.cell(0, 10, f"{t['name']}: {name} | {t['age']}: {age}", ln=True)
-    
-    for c in selected_concerns:
-        pdf.multi_cell(0, 10, f"{c}: {concern_data[lang][c]}")
-    
-    pdf.ln(10)
-    pdf.set_font_size(8)
-    pdf.multi_cell(0, 5, t["disclaimer"])
-    pdf.cell(0, 10, f"{t['copyright']} {date.today().year} Nutri-Sense", ln=True, align='C')
+        pdf.cell(0, 10, t["title"], ln=True, align='C')
+        pdf.cell(0, 10, f"Name: {name} | Age: {age} | Date: {date.today()}", ln=True)
+        for c in selected:
+            pdf.multi_cell(0, 10, f"\n{c}\nYoga: {cd[c]['Yoga']}\nFood: {cd[c]['Food']}")
+        
+        pdf.ln(10)
+        pdf.set_font_size(8)
+        pdf.multi_cell(0, 5, t["disclaimer"])
+        pdf_bytes = pdf.output(dest='S').encode('latin-1', 'replace')
+        st.download_button(t["ui"]["download"], pdf_bytes, f"Report_{name}.pdf")
 
-    pdf_bytes = pdf.output(dest='S').encode('latin-1', 'replace')
-    st.download_button("📥 Download PDF", pdf_bytes, "Report.pdf")
-
-st.markdown(f"--- \n {t['disclaimer']} \n\n {t['copyright']} {date.today().year} Nutri-Sense")
+st.markdown(f"--- \n {t['disclaimer']}")
