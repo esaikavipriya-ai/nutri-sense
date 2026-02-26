@@ -3,7 +3,7 @@ import pandas as pd
 from fpdf import FPDF
 from datetime import date
 
-# ---------------- MULTILINGUAL DICTIONARY (25 CONCERNS) ----------------
+# ---------------- MULTILINGUAL DICTIONARY (10 SAMPLE CONCERNS) ----------------
 # Organized by [Issue]: {English, Tamil, Hindi}
 data_master = {
     "Hair Fall": {
@@ -50,14 +50,8 @@ data_master = {
         "EN": {"Yoga": "Ustrasana (Camel), Sarvangasana", "Food": "Iodized salt, Walnut, Moong Dal", "Reason": "Hormonal balance"},
         "TA": {"Yoga": "உஷ்ட்ராசனம், சர்வாங்காசனம்", "Food": "அயோடின் உப்பு, வால்நட், பாசிப்பயறு", "Reason": "ஹார்மோன் சீராக்கம்"},
         "HI": {"Yoga": "उष्ट्रासन, सर्वांगासन", "Food": "आयोडीन युक्त नमक, अखरोट, मूंग दाल", "Reason": "हार्मोन संतुलन"}
-    },
-    "PCOS/Menstrual": {
-        "EN": {"Yoga": "Baddha Konasana (Butterfly), Malasana", "Food": "Cinnamon, Flaxseeds, Papaya", "Reason": "Pelvic blood flow"},
-        "TA": {"Yoga": "பத்த கோணாசனம், மாலாசனம்", "Food": "இலவங்கப்பட்டை, ஆளிவிதை, பப்பாளி", "Reason": "கருப்பை ஆரோக்கியம்"},
-        "HI": {"Yoga": "बद्ध कोणासन, मलासन", "Food": "दालचीनी, अलसी के बीज, पपीता", "Reason": "पेल्विक रक्त प्रवाह"}
     }
 }
-# (Remaining 15 concerns follow a similar pattern: Migraine, Asthma, Obesity, Kidney Stones, Fatty Liver, Arthritis, Insomnia, Skin Health, Muscle Cramps, Memory, Immunity, Sinus, Piles, Varicose Veins, and Fatigue)
 
 # ---------------- APP CONFIG ----------------
 st.set_page_config(page_title="Nutri-Sense Wellness", page_icon="🌿", layout="wide")
@@ -93,8 +87,8 @@ if submit:
         st.warning("Please fill all required fields.")
     else:
         st.success(f"Generated Plan for {name}")
-        
-        # Display Plan
+
+        # Display Plan in app
         for issue in selected:
             details = data_master[issue][lang_code]
             with st.expander(f"📌 {issue}", expanded=True):
@@ -105,18 +99,14 @@ if submit:
         # ---------------- PDF GENERATION ----------------
         pdf = FPDF()
         pdf.add_page()
-        
-        # Load Unicode Font (Crucial for Tamil/Hindi)
         try:
-            pdf.add_font('FreeSans', '', 'FreeSans.ttf')
-            pdf.set_font('FreeSans', size=14)
+            pdf.add_font('UnicodeFont', '', 'NotoSans-Regular.ttf', uni=True)
+            pdf.set_font('UnicodeFont', size=12)
         except:
-            pdf.set_font('Arial', size=12)
-            st.error("Font 'FreeSans.ttf' not found. PDF may show broken characters for Tamil/Hindi.")
+            pdf.set_font('helvetica', size=12)
+            st.error("⚠️ Font missing! Tamil/Hindi may not render properly.")
 
-        pdf.cell(0, 10, L["title"], ln=True, align='C')
-        pdf.set_font_size(10)
-        pdf.cell(0, 10, f"Name: {name} | Date: {date.today()}", ln=True)
+        pdf.cell(0, 10, f"Wellness Report: {name}", ln=True)
         pdf.ln(5)
 
         for issue in selected:
@@ -128,7 +118,8 @@ if submit:
         pdf.multi_cell(0, 5, L["disc"])
         pdf.cell(0, 10, L["copyright"], ln=True, align='C')
 
-        pdf_bytes = pdf.output()
+        # PDF bytes for download
+        pdf_bytes = pdf.output(dest='S').encode('latin1')
         st.download_button("📥 Download Official Report (PDF)", pdf_bytes, f"{name}_Report.pdf")
 
 # ---------------- FOOTER ----------------
