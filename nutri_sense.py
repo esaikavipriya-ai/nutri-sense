@@ -12,6 +12,41 @@ data_master = {
         "EN": {"Yoga": "Trataka (Candle Gazing), Palming", "Food": "Carrots, Papaya, Agathi Keerai", "Reason": "Vitamin A support"},
         "TA": {"Yoga": "திராடகம், பாமிங் பயிற்சி", "Food": "கேரட், பப்பாளி, அகத்திக்கீரை", "Reason": "வைட்டமின் ஏ சத்து"},
         "HI": {"Yoga": "त्राटक, पाल्मिंग", "Food": "गाजर, पपीता, अगथी के पत्ते", "Reason": "विटामिन ए का सहारा"}
+    },
+    "Diabetes": {
+        "EN": {"Yoga": "Mandukasana, Paschimottanasana", "Food": "Fenugreek, Millets, Jamun", "Reason": "Insulin regulation"},
+        "TA": {"Yoga": "மண்டூகாசனம், பச்சிமோத்தாசனம்", "Food": "வெந்தயம், சிறுதானியங்கள், நாவல் பழம்", "Reason": "இன்சுலின் சீராக்கம்"},
+        "HI": {"Yoga": "मंडूकासन, पश्चिमोत्तानासन", "Food": "मेथी, मोटे अनाज, जामुन", "Reason": "इंसुलिन विनियमन"}
+    },
+    "Acidity/Digestion": {
+        "EN": {"Yoga": "Vajrasana, Pavanamuktasana", "Food": "Buttermilk, Fennel seeds, Ginger", "Reason": "Gut motility"},
+        "TA": {"Yoga": "வஜ்ராசனம், பவனமுக்தாசனம்", "Food": "நீர் மோர், பெருஞ்சீரகம், இஞ்சி", "Reason": "செரிமான மேம்பாடு"},
+        "HI": {"Yoga": "वज्रासन, पवनमुक्तासन", "Food": "छाछ, सौंफ, अदरक", "Reason": "पाचन शक्ति"}
+    },
+    "Anxiety/Stress": {
+        "EN": {"Yoga": "Shavasana, Nadi Shodhana", "Food": "Chamomile, Almonds, Dark Chocolate", "Reason": "Cortisol reduction"},
+        "TA": {"Yoga": "சவாசனம், நாடி சுத்தி", "Food": "பாதாம், டார்க் சாக்லேட், மூலிகை டீ", "Reason": "மன அழுத்தம் குறைப்பு"},
+        "HI": {"Yoga": "शवासन, नाड़ी शोधन", "Food": "बादाम, डार्क चॉकलेट, हर्बल चाय", "Reason": "तनाव में कमी"}
+    },
+    "Back Pain": {
+        "EN": {"Yoga": "Marjariasana, Bhujangasana", "Food": "Turmeric, Garlic, Drumstick leaves", "Reason": "Spine flexibility"},
+        "TA": {"Yoga": "பூனை-பசு, புஜங்காசனம்", "Food": "மஞ்சள், பூண்டு, முருங்கைக்கீரை", "Reason": "தண்டுவட நெகிழ்வுத்தன்மை"},
+        "HI": {"Yoga": "मार्जरी आसन, भुजंगासन", "Food": "हल्दी, लहसुन, सहजन के पत्ते", "Reason": "रीढ़ का लचीलापन"}
+    },
+    "Anemia": {
+        "EN": {"Yoga": "Sarvangasana, Surya Namaskar", "Food": "Dates, Jaggery, Pomegranate", "Reason": "Hemoglobin boost"},
+        "TA": {"Yoga": "சர்வாங்காசனம், சூரிய நமஸ்காரம்", "Food": "பேரிச்சம்பழம், வெல்லம், மாதுளை", "Reason": "இரத்த சோகை நீக்கம்"},
+        "HI": {"Yoga": "सर्वांगासन, सूर्य नमस्कार", "Food": "खजूर, गुड़, अनार", "Reason": "हीमोग्लोबिन में वृद्धि"}
+    },
+    "High BP": {
+        "EN": {"Yoga": "Shavasana, Chandra Bhedi", "Food": "Garlic, Banana, Low-salt diet", "Reason": "Calms nervous system"},
+        "TA": {"Yoga": "சவாசனம், சந்திர பேதி", "Food": "பூண்டு, வாழைப்பழம், குறைந்த உப்பு", "Reason": "நரம்பு மண்டலம் அமைதி"},
+        "HI": {"Yoga": "शवासन, चंद्र भेदी", "Food": "लहसुन, केला, कम नमक वाला आहार", "Reason": "तंत्रिका तंत्र शांत"}
+    },
+    "Thyroid": {
+        "EN": {"Yoga": "Ustrasana, Sarvangasana", "Food": "Iodized salt, Walnut, Moong Dal", "Reason": "Hormonal balance"},
+        "TA": {"Yoga": "உஷ்ட்ராசனம், சர்வாங்காசனம்", "Food": "அயோடின் உப்பு, வால்நட், பாசிப்பயறு", "Reason": "ஹார்மோன் சீராக்கம்"},
+        "HI": {"Yoga": "उष्ट्रासन, सर्वांगासन", "Food": "आयोडीन युक्त नमक, अखरोट, मूंग दाल", "Reason": "हार्मोन संतुलन"}
     }
 }
 
@@ -64,7 +99,6 @@ with st.form("user_form"):
     with col2:
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
         selected = st.multiselect("Issues", list(data_master.keys()))
-    
     submit = st.form_submit_button("🚀 Generate Full Plan")
 
 # ---------------- DISPLAY PLAN ----------------
@@ -74,7 +108,7 @@ if submit:
     else:
         st.success(f"Generated Plan for {name}")
 
-        # Display each issue in app
+        # Display each issue
         for issue in selected:
             d = data_master[issue][lang_code]
             with st.expander(f"📌 {issue}", expanded=True):
@@ -91,7 +125,7 @@ if submit:
         # ---------------- PDF GENERATION ----------------
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font('Helvetica', size=12)
+        pdf.set_font('Arial', size=12)  # regular font
 
         # Title
         pdf.cell(0, 10, f"🌿 Wellness Report: {name}", ln=True, align='C')
@@ -121,6 +155,7 @@ if submit:
         pdf.multi_cell(0,8,disclaimer_text[lang_code])
         pdf.ln(2)
         pdf.multi_cell(0,8,motivation_text[lang_code])
+
         pdf.ln(10)
         pdf.cell(0,10,L['copyright'],ln=True,align='C')
 
@@ -128,12 +163,11 @@ if submit:
         pdf_bytes = pdf.output(dest='S').encode('latin1')
         st.download_button("📥 Download Wellness Report (PDF)", pdf_bytes, f"{name}_Wellness_Report.pdf")
 
-        # ---------------- ASK RATING AFTER DOWNLOAD ----------------
-        st.subheader("⭐ How would you rate this app after downloading your report?")
-        user_rating = st.radio(
+        # ---------- Rating AFTER download ----------
+        st.subheader("⭐ Rate Your Health / உங்கள் ஆரோக்கியம் / अपनी सेहत")
+        rating = st.radio(
             "Choose your rating",
             ["★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★"],
             index=2
         )
-        if user_rating:
-            st.success(f"Thank you for rating: {user_rating}")
+        st.success(f"Thanks for your rating: {rating}")
