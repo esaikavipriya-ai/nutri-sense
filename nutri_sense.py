@@ -3,7 +3,8 @@ from fpdf import FPDF
 import datetime
 import pandas as pd
 import os
-import pytz  # Required for IST timezone support
+import pytz
+import plotly.express as px
 
 # 1. ---------------- DATA MASTER (TAMIL NADU 12-HR) ----------------
 base_schedule = {
@@ -26,12 +27,11 @@ concern_data = {
     "High BP": {"Morning": "Poondu (Garlic) Water", "Yoga": "Shavasana"}
 }
 
-# 2. ---------------- LOGGING FUNCTION (SILENT SAVING) ----------------
+# 2. ---------------- LOGGING FUNCTION (SILENT TO PATH) ----------------
 def log_download(name, age, gender, bmi, issues):
     ist = pytz.timezone('Asia/Kolkata')
     timestamp = datetime.datetime.now(ist).strftime("%Y-%m-%d %I:%M:%S %p")
     
-    # Path for Science Expo
     target_path = r"C:\Users\LENOVO\Documents\qwings\Science Expo"
     if not os.path.exists(target_path):
         os.makedirs(target_path)
@@ -55,7 +55,7 @@ if 'submitted' not in st.session_state: st.session_state.submitted = False
 st.title("🌿 NutriSense: Tamil Traditional Wellness")
 
 with st.sidebar:
-    st.header("👤 Your Profile")
+    st.header("👤 User Profile")
     with st.form("user_form"):
         name = st.text_input("Name")
         age = st.number_input("Age", 5, 100, 25)
@@ -65,24 +65,44 @@ with st.sidebar:
         selected_issues = st.multiselect("Select Concerns", list(concern_data.keys()))
         submit = st.form_submit_button("Generate Plan")
 
-# 4. ---------------- UI & PDF ----------------
+# 4. ---------------- LOGIC & DASHBOARD ----------------
 if submit and name and selected_issues:
     st.session_state.submitted = True
     bmi = round(weight / ((height/100)**2), 1)
-    st.session_state.user_info = {
-        "name": name, "age": age, "gender": gender, "bmi": bmi, "issues": selected_issues
-    }
+    st.session_state.user_info = {"name": name, "age": age, "gender": gender, "bmi": bmi, "issues": selected_issues}
 
 if st.session_state.submitted:
     u = st.session_state.user_info
-    tab1, tab2 = st.tabs(["📅 Daily Plan", "📥 Download PDF"])
+    tab1, tab2, tab3 = st.tabs(["📅 Daily Plan", "📊 Health Analytics", "📥 Download PDF"])
 
     with tab1:
-        st.subheader(f"Plan for {u['name']} (Age: {u['age']}, Gender: {u['gender']})")
+        st.subheader(f"Plan for {u['name']} (Age: {u['age']})")
         for slot, info in base_schedule.items():
             st.info(f"**{slot}** | {info['Activity']}: {info['Standard']}")
 
     with tab2:
+        st.subheader("Community Health Trends")
+        log_path = r"C:\Users\LENOVO\Documents\qwings\Science Expo\nutrisense_logs.csv"
+        if os.path.exists(log_path):
+            df = pd.read_csv(log_path)
+            c1, c2 = st.columns(2)
+            
+            with c1:
+                # Pie Chart for Concerns
+                all_c = df["Concerns"].str.split(", ").explode().value_counts().reset_index()
+                all_c.columns = ["Concern", "Count"]
+                fig_pie = px.pie(all_c, values="Count", names="Concern", title="Top Health Issues")
+                st.plotly_chart(fig_pie, use_container_width=True)
+                
+            with c2:
+                # Bar Chart for BMI
+                st.write("**BMI Spread**")
+                st.bar_chart(df["BMI"])
+        else:
+            st.info("Analytics will appear here after the first report is downloaded.")
+
+    with tab3:
+        # --- PDF GENERATOR ---
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Helvetica", 'B', 16)
@@ -105,8 +125,7 @@ if st.session_state.submitted:
 
         pdf.set_font("Helvetica", '', 9)
         for slot, info in base_schedule.items():
-            yoga_txt = info['Activity']
-            food_txt = info['Standard']
+            yoga_txt, food_txt = info['Activity'], info['Standard']
             if "06:00 AM" in slot:
                 yoga_txt += "\nYoga: " + ", ".join([concern_data[i]['Yoga'] for i in u['issues']])
                 food_txt += "\nDetox: " + ", ".join([concern_data[i]['Morning'] for i in u['issues']])
@@ -128,8 +147,7 @@ if st.session_state.submitted:
         pdf.multi_cell(0, 5, "Disclaimer: Based on Tamil traditional practices. Consult a doctor before starting.")
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
-        
-        # --- FIXED SUCCESS MESSAGE ---
         if st.download_button("📥 Download PDF Report", pdf_bytes, f"{u['name']}_WellnessReport.pdf", "application/pdf"):
             log_download(u['name'], u['age'], u['gender'], u['bmi'], u['issues'])
-            st.success("Report Downloaded!") # Technical path removed
+            st.success("Report Downloaded!")
+            st.rerun() # Refresh to update charts immediately
