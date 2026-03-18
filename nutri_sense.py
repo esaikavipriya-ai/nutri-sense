@@ -25,12 +25,13 @@ concern_data = {
     "High BP": {"Morning": "Poondu Water", "Yoga": "Shavasana"}
 }
 
-# 2. ---------------- LOGGING FUNCTION (INCLUDES GENDER) ----------------
-def log_download(name, gender, bmi, issues):
+# 2. ---------------- LOGGING FUNCTION (INCLUDES AGE & GENDER) ----------------
+def log_download(name, age, gender, bmi, issues):
     log_file = "nutrisense_logs.csv"
     log_entry = pd.DataFrame([{
         "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p"),
         "Name": name, 
+        "Age": age,
         "Gender": gender,
         "BMI": bmi, 
         "Concerns": ", ".join(issues)
@@ -50,43 +51,31 @@ with st.sidebar:
     st.header("👤 Profile")
     with st.form("user_form"):
         name = st.text_input("Name")
+        age = st.number_input("Age", 5, 100, 25)
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
         weight = st.number_input("Weight (kg)", 30, 150, 70)
         height = st.number_input("Height (cm)", 100, 220, 170)
         selected_issues = st.multiselect("Concerns", list(concern_data.keys()))
         submit = st.form_submit_button("Generate Plan")
-    
-    st.divider()
-    # SECURE ADMIN DOWNLOAD (NO PREVIEW)
-    if st.checkbox("Admin Access"):
-        pwd = st.text_input("Admin Password", type="password")
-        if pwd == "admin123": 
-            if os.path.exists("nutrisense_logs.csv"):
-                df = pd.read_csv("nutrisense_logs.csv")
-                st.success("Authorized")
-                st.download_button(
-                    label="📥 Download User Logs (CSV)",
-                    data=df.to_csv(index=False).encode('utf-8'),
-                    file_name="nutrisense_admin_logs.csv",
-                    mime="text/csv"
-                )
-            else:
-                st.info("No logs found yet.")
-        elif pwd:
-            st.error("Incorrect Password")
 
+# 4. ---------------- UI & PDF ----------------
 if submit and name and selected_issues:
     st.session_state.submitted = True
     bmi = round(weight / ((height/100)**2), 1)
-    st.session_state.user_info = {"name": name, "gender": gender, "bmi": bmi, "issues": selected_issues}
+    st.session_state.user_info = {
+        "name": name, 
+        "age": age, 
+        "gender": gender, 
+        "bmi": bmi, 
+        "issues": selected_issues
+    }
 
-# 4. ---------------- UI & PDF ----------------
 if st.session_state.submitted:
     u = st.session_state.user_info
     tab1, tab2 = st.tabs(["📅 Daily Plan", "📥 Download PDF"])
 
     with tab1:
-        st.subheader(f"Plan for {u['name']} ({u['gender']})")
+        st.subheader(f"Plan for {u['name']} (Age: {u['age']}, Gender: {u['gender']})")
         for slot, info in base_schedule.items():
             st.info(f"**{slot}** | {info['Activity']}: {info['Standard']}")
 
@@ -100,7 +89,7 @@ if st.session_state.submitted:
         pdf.cell(0, 10, f"Generated: {datetime.datetime.now().strftime('%I:%M %p')}", ln=True, align='R')
         
         pdf.set_font("Helvetica", 'B', 11)
-        pdf.cell(0, 10, f"Name: {u['name']} | Gender: {u['gender']} | BMI: {u['bmi']}", ln=True)
+        pdf.cell(0, 10, f"Name: {u['name']} | Age: {u['age']} | Gender: {u['gender']} | BMI: {u['bmi']}", ln=True)
         pdf.ln(5)
 
         # Header Configuration
@@ -124,7 +113,6 @@ if st.session_state.submitted:
             lines_f = len(pdf.multi_cell(col_w, 6, food_txt, split_only=True))
             max_h = max(lines_y, lines_f, 1) * 6 + 4
 
-            # Draw cells
             pdf.multi_cell(col_w, max_h, slot, border=1, align='C')
             pdf.set_xy(pdf.l_margin + col_w, start_y)
             pdf.multi_cell(col_w, max_h / (lines_y if lines_y > 0 else 1), yoga_txt, border=1)
@@ -132,12 +120,11 @@ if st.session_state.submitted:
             pdf.multi_cell(col_w, max_h / (lines_f if lines_f > 0 else 1), food_txt, border=1)
             pdf.set_y(start_y + max_h)
 
-        # Disclaimer
         pdf.ln(10)
         pdf.set_font("Helvetica", 'I', 8)
         pdf.multi_cell(0, 5, "Disclaimer: Based on Tamil traditional practices. Consult a doctor before starting.")
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
         if st.download_button("📥 Download PDF", pdf_bytes, f"{u['name']}_Report.pdf", "application/pdf"):
-            log_download(u['name'], u['gender'], u['bmi'], u['issues'])
-            st.success("Download Logged to CSV.")
+            log_download(u['name'], u['age'], u['gender'], u['bmi'], u['issues'])
+            st.success("Download Logged.")
