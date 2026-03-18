@@ -1,136 +1,122 @@
 import streamlit as st
 from fpdf import FPDF
 import datetime
+import pandas as pd
+import os
 
-# 1. ---------------- TAMIL NADU TRADITIONAL DATA ----------------
-# Standard Tamil Daily Schedule
+# 1. ---------------- DATA MASTER (TAMIL NADU 12-HR) ----------------
 base_schedule = {
-    "06:00 - 07:00": {"Activity": "Early Morning Detox (Detox Neer)", "Standard": "Warm Jeera (Cumin) Water"},
-    "08:30 - 09:30": {"Activity": "Breakfast", "Standard": "Millet Idli or Ragi Dosai with Onion Chutney"},
-    "11:00 - 11:30": {"Activity": "Mid-Morning Refreshment", "Standard": "Elaneer (Tender Coconut) or Neer Mor (Buttermilk)"},
-    "13:00 - 14:00": {"Activity": "Lunch", "Standard": "Hand-pounded Red Rice, Keerai Poriyal, and Rasam"},
-    "16:30 - 17:30": {"Activity": "Evening Protein Snack", "Standard": "Sundal (Chickpea/Green Gram) with Grated Coconut"},
-    "19:30 - 20:30": {"Activity": "Light Dinner", "Standard": "Vegetable Idiyappam or Kuthiraivali (Barnyard Millet) Kanji"}
+    "06:00 AM - 07:00 AM": {"Activity": "Early Morning Detox", "Standard": "Warm Jeera (Cumin) Water"},
+    "08:30 AM - 09:30 AM": {"Activity": "Traditional Breakfast", "Standard": "Millet Idli or Ragi Dosai with Chutney"},
+    "11:00 AM - 11:30 AM": {"Activity": "Mid-Morning Refresh", "Standard": "Elaneer (Tender Coconut) or Neer Mor"},
+    "01:00 PM - 02:00 PM": {"Activity": "Nutritious Lunch", "Standard": "Red Rice, Keerai Poriyal, and Rasam"},
+    "04:30 PM - 05:30 PM": {"Activity": "Evening Protein", "Standard": "Sundal (Chickpea/Green Gram)"},
+    "07:30 PM - 08:30 PM": {"Activity": "Light Dinner", "Standard": "Idiyappam or Millet Kanji"}
 }
 
-# Concern-Specific Tamil Medicinal Foods & Yoga
 concern_data = {
-    "Hair Fall": {"Morning": "Karisalanganni (False Daisy) Tea & Soaked Almonds", "Yoga": "Sarvangasana", "Reason": "Improves scalp circulation"},
-    "Diabetes": {"Morning": "Vendhayam (Fenugreek) Water & Sirukurinjan Tea", "Yoga": "Mandukasana", "Reason": "Regulates blood sugar naturally"},
-    "Eye Strain": {"Morning": "Ponnanganni Keerai Juice or Carrot Juice", "Yoga": "Trataka (Candle Gazing)", "Reason": "Rich in Vitamin A for vision"},
-    "Acidity": {"Morning": "Inji (Ginger) & Honey or Fennel Water", "Yoga": "Vajrasana (Post-meal)", "Reason": "Relieves gut inflammation"},
-    "Thyroid": {"Morning": "Kothamalli (Coriander) Seed Water", "Yoga": "Ustrasana", "Reason": "Supports hormonal balance"},
-    "Anemia": {"Morning": "Karupatti (Jaggery) with Dates & Pomegranate", "Yoga": "Surya Namaskar", "Reason": "Boosts Hemoglobin levels"},
-    "PCOD/PCOS": {"Morning": "Soaked Fenugreek Seeds & Black Gram Porridge", "Yoga": "Baddha Konasana (Butterfly Pose)", "Reason": "Hormonal balance and pelvic health"},
-    "Joint Pain": {"Morning": "Mudakathan (Balloon Vine) Keerai Soup", "Yoga": "Tadasana & Gentle Rotations", "Reason": "Natural anti-inflammatory for joints"},
-    "Constipation": {"Morning": "Triphala Powder in Warm Water or Castor Oil (drop)", "Yoga": "Pavanamuktasana", "Reason": "Cleanses the digestive tract"},
-    "High BP": {"Morning": "Garlic (Poondu) with Warm Water", "Yoga": "Shavasana & Anulom Vilom", "Reason": "Relaxes the nervous system"},
-    "Skin Health": {"Morning": "Neem (Veppam) & Turmeric (Manjal) Water", "Yoga": "Bhujangasana", "Reason": "Detoxifies blood and improves glow"},
-    "Memory Power": {"Morning": "Vallarai Keerai (Brahmi) Chutney/Tea", "Yoga": "Sirshasana (under guidance)", "Reason": "Enhances cognitive function and focus"}
+    "Hair Fall": {"Morning": "Karisalanganni Tea", "Yoga": "Sarvangasana"},
+    "Diabetes": {"Morning": "Vendhayam Water", "Yoga": "Mandukasana"},
+    "Eye Strain": {"Morning": "Ponnanganni Juice", "Yoga": "Trataka"},
+    "Acidity": {"Morning": "Inji Honey Water", "Yoga": "Vajrasana"},
+    "Thyroid": {"Morning": "Kothamalli Water", "Yoga": "Ustrasana"},
+    "PCOD/PCOS": {"Morning": "Ulunthu Kanji", "Yoga": "Baddha Konasana"},
+    "Joint Pain": {"Morning": "Mudakathan Soup", "Yoga": "Tadasana"},
+    "High BP": {"Morning": "Poondu Water", "Yoga": "Shavasana"}
 }
 
-# 2. ---------------- APP CONFIG & UI ----------------
-st.set_page_config(page_title="NutriSense Tamil Nadu", page_icon="🌿", layout="wide")
+# 2. ---------------- LOGGING FUNCTION ----------------
+def log_download(name, bmi, issues):
+    log_file = "nutrisense_logs.csv"
+    log_entry = pd.DataFrame([{
+        "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p"),
+        "Name": name, "BMI": bmi, "Concerns": ", ".join(issues)
+    }])
+    if not os.path.isfile(log_file): log_entry.to_csv(log_file, index=False)
+    else: log_entry.to_csv(log_file, mode='a', header=False, index=False)
+
+# 3. ---------------- APP CONFIG ----------------
+st.set_page_config(page_title="NutriSense Tamil Nadu", layout="wide")
 if 'submitted' not in st.session_state: st.session_state.submitted = False
 
-st.title("🌿 NutriSense: Tamil Traditional Wellness Guide")
-st.markdown("*\"Unave Marundhu, Marunthe Unavu\" (Food is Medicine)*")
+st.title("🌿 NutriSense: Tamil Traditional Wellness")
 
-# 3. ---------------- SIDEBAR PROFILE ----------------
 with st.sidebar:
-    st.header("👤 User Profile")
+    st.header("👤 Profile")
     with st.form("user_form"):
         name = st.text_input("Name")
         weight = st.number_input("Weight (kg)", 30, 150, 70)
         height = st.number_input("Height (cm)", 100, 220, 170)
-        selected_issues = st.multiselect("Select Concerns", list(concern_data.keys()))
-        submit = st.form_submit_button("Generate Tamil Health Plan")
+        selected_issues = st.multiselect("Concerns", list(concern_data.keys()))
+        submit = st.form_submit_button("Generate Plan")
+    
+    if st.checkbox("Admin: View Logs"):
+        if os.path.exists("nutrisense_logs.csv"):
+            st.dataframe(pd.read_csv("nutrisense_logs.csv"))
 
-# 4. ---------------- REPORT LOGIC ----------------
 if submit and name and selected_issues:
     st.session_state.submitted = True
     bmi = round(weight / ((height/100)**2), 1)
     st.session_state.user_info = {"name": name, "bmi": bmi, "issues": selected_issues}
 
-# 5. ---------------- DASHBOARD & PDF ----------------
+# 4. ---------------- UI & PDF ----------------
 if st.session_state.submitted:
     u = st.session_state.user_info
-    tab1, tab2 = st.tabs(["📅 Daily Tamil Plan", "📥 Download Report"])
-    
+    tab1, tab2 = st.tabs(["📅 Daily Plan", "📥 Download PDF"])
+
     with tab1:
-        st.subheader(f"Customized Tamil Lifestyle Plan for {u['name']}")
+        st.subheader(f"Plan for {u['name']} (12hr Format)")
         for slot, info in base_schedule.items():
-            extra = ""
-            if slot == "06:00 - 07:00":
-                yogas = [concern_data[iss]["Yoga"] for iss in u["issues"]]
-                foods = [concern_data[iss]["Morning"] for iss in u["issues"]]
-                extra = f"\n\n🧘 **Yoga:** {', '.join(yogas)}\n\n🥗 **Medicinal Intake:** {', '.join(foods)}"
-            
-            st.info(f"**{slot}** | **{info['Activity']}**\n\n{info['Standard']}{extra}")
+            st.info(f"**{slot}** | {info['Activity']}: {info['Standard']}")
 
     with tab2:
-        # --- PDF GENERATOR ---
         pdf = FPDF()
         pdf.add_page()
-        
-        # Header & Metadata
         pdf.set_font("Helvetica", 'B', 16)
-        pdf.cell(0, 10, "NUTRISENSE: TAMIL TRADITIONAL REPORT", ln=True, align='C')
-        pdf.set_font("Helvetica", 'I', 8)
-        pdf.cell(0, 5, f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align='R')
+        pdf.cell(0, 10, "NUTRISENSE WELLNESS REPORT", ln=True, align='C')
+        
+        pdf.set_font("Helvetica", 'I', 9)
+        pdf.cell(0, 10, f"Generated: {datetime.datetime.now().strftime('%I:%M %p')}", ln=True, align='R')
+        
+        pdf.set_font("Helvetica", 'B', 11)
+        pdf.cell(0, 10, f"Name: {u['name']} | BMI: {u['bmi']}", ln=True)
         pdf.ln(5)
 
-        # Profile Section
-        pdf.set_font("Helvetica", 'B', 12)
-        pdf.cell(0, 8, f"Name: {u['name']} | BMI: {u['bmi']}", ln=True)
-        pdf.ln(5)
+        # Header
+        col_w = [40, 75, 75]
+        pdf.set_fill_color(220, 240, 220)
+        pdf.cell(col_w[0], 10, "Time (12h)", 1, 0, 'C', True)
+        pdf.cell(col_w[1], 10, "Activity & Yoga", 1, 0, 'C', True)
+        pdf.cell(col_w[2], 10, "Tamil Traditional Food", 1, 1, 'C', True)
 
-        # Table Alignment Logic
-        col_time, col_yoga, col_diet = 35, 75, 80
-        pdf.set_fill_color(230, 240, 230)
-        pdf.set_font("Helvetica", 'B', 10)
-        pdf.cell(col_time, 10, "Time Slot", 1, 0, 'C', 1)
-        pdf.cell(col_yoga, 10, "Yoga & Activity", 1, 0, 'C', 1)
-        pdf.cell(col_diet, 10, "Tamil Traditional Food", 1, 1, 'C', 1)
-
-        pdf.set_font("Helvetica", size=9)
+        pdf.set_font("Helvetica", '', 9)
         for slot, info in base_schedule.items():
-            yoga_text = info['Activity']
-            diet_text = info['Standard']
-            if slot == "06:00 - 07:00":
-                yoga_text += f"\nYoga: {', '.join([concern_data[iss]['Yoga'] for iss in u['issues']])}"
-                diet_text += f"\nDetox: {', '.join([concern_data[iss]['Morning'] for iss in u['issues']])}"
+            yoga_txt = info['Activity']
+            food_txt = info['Standard']
+            if "06:00 AM" in slot:
+                yoga_txt += "\nYoga: " + ", ".join([concern_data[i]['Yoga'] for i in u['issues']])
+                food_txt += "\nDetox: " + ", ".join([concern_data[i]['Morning'] for i in u['issues']])
 
-            # Calculate height for row alignment
-            curr_x, curr_y = pdf.get_x(), pdf.get_y()
-            pdf.multi_cell(col_time, 10, slot, border=1, align='C')
-            new_y = pdf.get_y()
-            
-            pdf.set_xy(curr_x + col_time, curr_y)
-            pdf.multi_cell(col_yoga, 5, yoga_text, border=1)
-            new_y = max(new_y, pdf.get_y())
-            
-            pdf.set_xy(curr_x + col_time + col_yoga, curr_y)
-            pdf.multi_cell(col_diet, 5, diet_text, border=1)
-            new_y = max(new_y, pdf.get_y())
-            pdf.set_y(new_y)
- # Footer Disclaimer
+            # --- ALIGNMENT LOGIC ---
+            start_y = pdf.get_y()
+            # Calculate height needed
+            lines_y = len(pdf.multi_cell(col_w[1], 6, yoga_txt, split_only=True))
+            lines_f = len(pdf.multi_cell(col_w[2], 6, food_txt, split_only=True))
+            max_h = max(lines_y, lines_f, 1) * 6 + 4
+
+            # Draw cells
+            pdf.multi_cell(col_w[0], max_h, slot, border=1, align='C')
+            pdf.set_xy(pdf.l_margin + col_w[0], start_y)
+            pdf.multi_cell(col_w[1], max_h / (lines_y if lines_y > 0 else 1), yoga_txt, border=1)
+            pdf.set_xy(pdf.l_margin + col_w[0] + col_w[1], start_y)
+            pdf.multi_cell(col_w[2], max_h / (lines_f if lines_f > 0 else 1), food_txt, border=1)
+            pdf.set_y(start_y + max_h)
+
+        # Disclaimer
         pdf.ln(10)
-        pdf.set_font("Helvetica", 'B', 8)
-        pdf.cell(0, 5, "MEDICAL DISCLAIMER:", ln=True)
-        pdf.set_font("Helvetica", '', 7)
-        pdf.multi_cell(0, 4, "This report is for educational purposes only. Consult a doctor before starting these regimens.")
+        pdf.set_font("Helvetica", 'I', 8)
+        pdf.multi_cell(0, 5, "Disclaimer: Based on Tamil traditional practices. Consult a doctor before starting.")
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
-        
-        # Download Button with Logging
-        btn = st.download_button(
-            label="📥 Download NutriSense Tamil Report",
-            data=pdf_bytes,
-            file_name=f"Tamil_Report_{u['name']}.pdf",
-            mime="application/pdf"
-        )
-        
-        if btn:
-            log_user_download(u['name'], u['weight'], u['height'], u['bmi'], u['issues'])
-            st.success("Report downloaded and details logged to CSV!")
+        if st.download_button("📥 Download PDF", pdf_bytes, f"{u['name']}_Report.pdf", "application/pdf"):
+            log_download(u['name'], u['bmi'], u['issues'])
