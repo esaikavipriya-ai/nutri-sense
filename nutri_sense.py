@@ -55,14 +55,30 @@ concern_data = {
 # 2. ---------------- LOGGING FUNCTION (SILENT SAVING) ----------------
 def log_download(name, age, gender, bmi, issues):
     ist = pytz.timezone('Asia/Kolkata')
-    ts = datetime.datetime.now(ist).strftime("%Y-%m-%d %I:%M:%S %p")
-    target_path = r"C:\Users\LENOVO\Documents\qwings\Science Expo"
-    if not os.path.exists(target_path): os.makedirs(target_path)
+    timestamp = datetime.datetime.now(ist).strftime("%Y-%m-%d %I:%M:%S %p")
+    
+    # Updated to your new specific sub-folder
+    target_path = r"C:\Users\LENOVO\Documents\qwings\Science Expo\nutrisense"
+    
+    # Safety check: Create folder if it doesn't exist
+    if not os.path.exists(target_path):
+        os.makedirs(target_path)
+        
     log_file = os.path.join(target_path, "nutrisense_logs.csv")
     
-    log_entry = pd.DataFrame([{"Timestamp": ts, "Name": name, "Age": age, "Gender": gender, "BMI": bmi, "Concerns": ", ".join(issues)}])
-    if not os.path.isfile(log_file): log_entry.to_csv(log_file, index=False)
-    else: log_entry.to_csv(log_file, mode='a', header=False, index=False)
+    log_entry = pd.DataFrame([{
+        "Timestamp": timestamp,
+        "Name": name, 
+        "Age": age,
+        "Gender": gender,
+        "BMI": bmi, 
+        "Concerns": ", ".join(issues)
+    }])
+    
+    if not os.path.isfile(log_file): 
+        log_entry.to_csv(log_file, index=False)
+    else: 
+        log_entry.to_csv(log_file, mode='a', header=False, index=False)
 
 # 3. ---------------- APP UI ----------------
 st.set_page_config(page_title="NutriSense Tamil Nadu", layout="wide")
