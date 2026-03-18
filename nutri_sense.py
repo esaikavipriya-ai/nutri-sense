@@ -61,7 +61,7 @@ def log_download(name, age, gender, bmi, issues):
     if not os.path.exists(target_path):
         os.makedirs(target_path)
         
-    log_file = os.path.join(target_path, "nutrisense_logs.csv")
+    log_file = os.path.join(target_path, "nutri_sense.csv")
     log_entry = pd.DataFrame([{"Timestamp": timestamp, "Name": name, "Age": age, "Gender": gender, "BMI": bmi, "Concerns": ", ".join(issues)}])
     
     if not os.path.isfile(log_file): 
@@ -113,7 +113,7 @@ if st.session_state.submitted:
                 st.write(concern_data[issue]['Recipe'])
 
     with t3:
-        log_path = r"C:\Users\LENOVO\Documents\qwings\Science Expo\nutrisense\nutrisense_logs.csv"
+        log_path = r"C:\Users\LENOVO\Documents\qwings\Science Expo\nutrisense\nutri_sense.csv"
         if os.path.exists(log_path):
             df_logs = pd.read_csv(log_path)
             c1, c2 = st.columns(2)
@@ -126,7 +126,7 @@ if st.session_state.submitted:
         else: st.warning("Download a report first to see analytics.")
 
     with t4:
-        # --- PDF GENERATOR (FIXED ALIGNMENT) ---
+        # --- PDF GENERATOR ---
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Helvetica", 'B', 16)
@@ -155,7 +155,6 @@ if st.session_state.submitted:
                 y_txt += "\nYoga: " + ", ".join([concern_data[i]['Yoga'] for i in u['issues']])
                 f_txt += "\nDetox: " + ", ".join([concern_data[i]['Morning'] for i in u['issues']])
 
-            # Stable Alignment logic
             s_y = pdf.get_y()
             lines_y = len(pdf.multi_cell(col_w, 6, y_txt, split_only=True))
             lines_f = len(pdf.multi_cell(col_w, 6, f_txt, split_only=True))
