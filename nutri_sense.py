@@ -6,11 +6,11 @@ import datetime
 # Standard Tamil Daily Schedule
 base_schedule = {
     "06:00 - 07:00": {"Activity": "Early Morning Detox (Detox Neer)", "Standard": "Warm Jeera (Cumin) Water"},
-    "08:30 - 09:30": {"Activity": "Traditional Breakfast (Kaalai Unavu)", "Standard": "Millet Idli or Ragi Dosai with Onion Chutney"},
+    "08:30 - 09:30": {"Activity": "Breakfast", "Standard": "Millet Idli or Ragi Dosai with Onion Chutney"},
     "11:00 - 11:30": {"Activity": "Mid-Morning Refreshment", "Standard": "Elaneer (Tender Coconut) or Neer Mor (Buttermilk)"},
-    "13:00 - 14:00": {"Activity": "Nutritious Lunch (Madhiya Unavu)", "Standard": "Hand-pounded Red Rice, Keerai Poriyal, and Rasam"},
+    "13:00 - 14:00": {"Activity": "Lunch", "Standard": "Hand-pounded Red Rice, Keerai Poriyal, and Rasam"},
     "16:30 - 17:30": {"Activity": "Evening Protein Snack", "Standard": "Sundal (Chickpea/Green Gram) with Grated Coconut"},
-    "19:30 - 20:30": {"Activity": "Light Dinner (Iravu Unavu)", "Standard": "Vegetable Idiyappam or Kuthiraivali (Barnyard Millet) Kanji"}
+    "19:30 - 20:30": {"Activity": "Light Dinner", "Standard": "Vegetable Idiyappam or Kuthiraivali (Barnyard Millet) Kanji"}
 }
 
 # Concern-Specific Tamil Medicinal Foods & Yoga
@@ -20,7 +20,13 @@ concern_data = {
     "Eye Strain": {"Morning": "Ponnanganni Keerai Juice or Carrot Juice", "Yoga": "Trataka (Candle Gazing)", "Reason": "Rich in Vitamin A for vision"},
     "Acidity": {"Morning": "Inji (Ginger) & Honey or Fennel Water", "Yoga": "Vajrasana (Post-meal)", "Reason": "Relieves gut inflammation"},
     "Thyroid": {"Morning": "Kothamalli (Coriander) Seed Water", "Yoga": "Ustrasana", "Reason": "Supports hormonal balance"},
-    "Anemia": {"Morning": "Karupatti (Jaggery) with Dates & Pomegranate", "Yoga": "Surya Namaskar", "Reason": "Boosts Hemoglobin levels"}
+    "Anemia": {"Morning": "Karupatti (Jaggery) with Dates & Pomegranate", "Yoga": "Surya Namaskar", "Reason": "Boosts Hemoglobin levels"},
+    "PCOD/PCOS": {"Morning": "Soaked Fenugreek Seeds & Black Gram Porridge", "Yoga": "Baddha Konasana (Butterfly Pose)", "Reason": "Hormonal balance and pelvic health"},
+    "Joint Pain": {"Morning": "Mudakathan (Balloon Vine) Keerai Soup", "Yoga": "Tadasana & Gentle Rotations", "Reason": "Natural anti-inflammatory for joints"},
+    "Constipation": {"Morning": "Triphala Powder in Warm Water or Castor Oil (drop)", "Yoga": "Pavanamuktasana", "Reason": "Cleanses the digestive tract"},
+    "High BP": {"Morning": "Garlic (Poondu) with Warm Water", "Yoga": "Shavasana & Anulom Vilom", "Reason": "Relaxes the nervous system"},
+    "Skin Health": {"Morning": "Neem (Veppam) & Turmeric (Manjal) Water", "Yoga": "Bhujangasana", "Reason": "Detoxifies blood and improves glow"},
+    "Memory Power": {"Morning": "Vallarai Keerai (Brahmi) Chutney/Tea", "Yoga": "Sirshasana (under guidance)", "Reason": "Enhances cognitive function and focus"}
 }
 
 # 2. ---------------- APP CONFIG & UI ----------------
@@ -108,14 +114,23 @@ if st.session_state.submitted:
             pdf.multi_cell(col_diet, 5, diet_text, border=1)
             new_y = max(new_y, pdf.get_y())
             pdf.set_y(new_y)
-
-        # Footer Disclaimer
+ # Footer Disclaimer
         pdf.ln(10)
         pdf.set_font("Helvetica", 'B', 8)
-        pdf.cell(0, 5, "MARUTHUVA ARIKKAI (MEDICAL DISCLAIMER):", ln=True)
+        pdf.cell(0, 5, "MEDICAL DISCLAIMER:", ln=True)
         pdf.set_font("Helvetica", '', 7)
-        pdf.multi_cell(0, 4, "This report follows traditional Tamil dietary patterns. It is for educational purposes only. "
-                             "Please consult a Siddha or Allopathic doctor before starting these regimens.")
+        pdf.multi_cell(0, 4, "This report is for educational purposes only. Consult a doctor before starting these regimens.")
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
-        st.download_button("📥 Download NutriSense Tamil Report", pdf_bytes, f"Tamil_Report_{u['name']}.pdf", "application/pdf")
+        
+        # Download Button with Logging
+        btn = st.download_button(
+            label="📥 Download NutriSense Tamil Report",
+            data=pdf_bytes,
+            file_name=f"Tamil_Report_{u['name']}.pdf",
+            mime="application/pdf"
+        )
+        
+        if btn:
+            log_user_download(u['name'], u['weight'], u['height'], u['bmi'], u['issues'])
+            st.success("Report downloaded and details logged to CSV!")
