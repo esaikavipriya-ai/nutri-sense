@@ -2,8 +2,7 @@ import streamlit as st
 from fpdf import FPDF
 import datetime
 
-# 1. ---------------- DATA MASTER (TIMELINE & CONCERNS) ----------------
-# Standard Daily Schedule
+# 1. ---------------- DATA MASTER ----------------
 base_schedule = {
     "06:00 - 07:00": {"Activity": "Early Morning Detox", "Standard": "1 Glass Warm Water"},
     "08:30 - 09:30": {"Activity": "Healthy Breakfast", "Standard": "Oats / Poha / Whole Wheat Toast"},
@@ -13,136 +12,102 @@ base_schedule = {
     "19:30 - 20:30": {"Activity": "Light Dinner", "Standard": "Vegetable Soup or Moong Dal Khichdi"}
 }
 
-# Concern-Specific Add-ons
 concern_data = {
-    "Hair Fall": {"Morning": "Soaked Almonds & Amla", "Yoga": "Adho Mukha Svanasana", "Reason": "Scalp Health"},
-    "Diabetes": {"Morning": "Fenugreek Water", "Yoga": "Mandukasana", "Reason": "Sugar Control"},
-    "Eye Strain": {"Morning": "Carrot Juice", "Yoga": "Eye Palming", "Reason": "Vision Support"},
-    "Acidity": {"Morning": "Fennel Seed Water", "Yoga": "Vajrasana", "Reason": "Digestion"},
-    "Anxiety": {"Morning": "Chamomile Tea", "Yoga": "Shavasana", "Reason": "Stress Relief"},
-    "Back Pain": {"Morning": "Turmeric Milk", "Yoga": "Bhujangasana", "Reason": "Spine Health"},
-    "Thyroid": {"Morning": "Coriander Seed Water", "Yoga": "Ustrasana", "Reason": "Hormone Balance"}
+    "Hair Fall": {"Morning": "Soaked Almonds & Amla", "Yoga": "Adho Mukha Svanasana"},
+    "Diabetes": {"Morning": "Fenugreek Water", "Yoga": "Mandukasana"},
+    "Eye Strain": {"Morning": "Carrot Juice", "Yoga": "Eye Palming"},
+    "Acidity": {"Morning": "Fennel Seed Water", "Yoga": "Vajrasana"},
+    "Thyroid": {"Morning": "Coriander Seed Water", "Yoga": "Ustrasana"}
 }
 
-# 2. ---------------- APP CONFIG & SESSION STATE ----------------
+# 2. ---------------- APP CONFIG ----------------
 st.set_page_config(page_title="NutriSense Pro", page_icon="🌿", layout="wide")
+if 'submitted' not in st.session_state: st.session_state.submitted = False
 
-if 'submitted' not in st.session_state:
-    st.session_state.submitted = False
+st.title("🌿 NutriSense: Personalized Health Intelligence")
 
-st.title("🌿 NutriSense: Smart Health Planner")
-
-# 3. ---------------- SIDEBAR INPUT FORM ----------------
+# 3. ---------------- SIDEBAR INPUTS ----------------
 with st.sidebar:
-    st.header("👤 Your Profile")
+    st.header("👤 Profile")
     with st.form("user_form"):
-        name = st.text_input("Full Name", placeholder="e.g. John Doe")
-        age = st.number_input("Age", 5, 100, 25)
-        weight = st.number_input("Weight (kg)", 30.0, 150.0, 70.0)
-        height = st.number_input("Height (cm)", 100.0, 250.0, 170.0)
-        selected_issues = st.multiselect("Health Concerns", list(concern_data.keys()))
-        submit_btn = st.form_submit_button("Generate 24h Plan")
+        name = st.text_input("Full Name")
+        weight = st.number_input("Weight (kg)", 30, 150, 70)
+        height = st.number_input("Height (cm)", 100, 220, 170)
+        selected_issues = st.multiselect("Select Concerns", list(concern_data.keys()))
+        submit = st.form_submit_button("Generate Report")
 
-# 4. ---------------- CALCULATION LOGIC ----------------
-if submit_btn:
-    if not name or not selected_issues:
-        st.error("Please provide your name and select at least one concern.")
-    else:
-        st.session_state.submitted = True
-        # BMI Calculation
-        height_m = height / 100
-        bmi = round(weight / (height_m ** 2), 1)
-        
-        if bmi < 18.5: cat = "Underweight"
-        elif 18.5 <= bmi < 25: cat = "Healthy"
-        elif 25 <= bmi < 30: cat = "Overweight"
-        else: cat = "Obese"
-        
-        st.session_state.report_data = {
-            "name": name, "bmi": bmi, "cat": cat, "issues": selected_issues
-        }
+if submit and name and selected_issues:
+    st.session_state.submitted = True
+    bmi = round(weight / ((height/100)**2), 1)
+    st.session_state.user_info = {"name": name, "bmi": bmi}
 
-# 5. ---------------- MAIN DISPLAY ----------------
+# 4. ---------------- MAIN DISPLAY & PDF ----------------
 if st.session_state.submitted:
-    rd = st.session_state.report_data
+    u = st.session_state.user_info
+    tab1, tab2 = st.tabs(["📅 Your Timeline", "📥 Download PDF"])
     
-    # Dashboard Metrics
-    m1, m2, m3 = st.columns(3)
-    m1.metric("BMI Score", rd["bmi"])
-    m2.metric("Weight Status", rd["cat"])
-    m3.metric("Concerns", len(rd["issues"]))
-
-    tab1, tab2, tab3 = st.tabs(["🕒 Daily Timeline", "🧘 Yoga Guide", "📥 Download Report"])
-
     with tab1:
-        st.subheader("Your Personalized 24-Hour Schedule")
+        st.subheader(f"24-Hour Plan for {u['name']}")
         for slot, info in base_schedule.items():
-            # Inject concern-specific food into early morning slot
-            morning_add = ""
-            if slot == "06:00 - 07:00":
-                foods = [concern_data[iss]["Morning"] for iss in rd["issues"]]
-                morning_add = f" + **{', '.join(foods)}**"
-            
-            with st.container():
-                c1, c2 = st.columns([1, 4])
-                c1.write(f"**{slot}**")
-                c2.info(f"**{info['Activity']}**: {info['Standard']}{morning_add}")
+            extra = f" + {', '.join([concern_data[iss]['Morning'] for iss in selected_issues])}" if slot == "06:00 - 07:00" else ""
+            st.info(f"**{slot}** | {info['Activity']}: {info['Standard']}{extra}")
 
     with tab2:
-        st.subheader("Targeted Yoga Routine")
-        for issue in rd["issues"]:
-            with st.expander(f"Yoga for {issue}", expanded=True):
-                st.write(f"🧘 **Posture**: {concern_data[issue]['Yoga']}")
-                st.write(f"💡 **Benefit**: {concern_data[issue]['Reason']}")
-
-    with tab3:
-        st.subheader("Export Report")
-        
-        # --- PDF GENERATOR ---
+        # --- PDF GENERATOR WITH ALIGNMENT FIX ---
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Helvetica", 'B', 16)
-        pdf.cell(0, 10, "NUTRISENSE PERSONALIZED WELLNESS LOG", ln=True, align='C')
-        pdf.ln(5)
         
-        pdf.set_font("Helvetica", size=11)
-        pdf.cell(0, 8, f"Patient: {rd['name']} | Date: {datetime.date.today()}", ln=True)
-        pdf.cell(0, 8, f"BMI Status: {rd['bmi']} ({rd['cat']})", ln=True)
+        # Header & Timestamp
+        pdf.set_font("Helvetica", 'B', 16)
+        pdf.cell(0, 10, "NUTRISENSE WELLNESS REPORT", ln=True, align='C')
+        pdf.set_font("Helvetica", 'I', 9)
+        download_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        pdf.cell(0, 10, f"Generated on: {download_time}", ln=True, align='R')
+        
+        # User Info
+        pdf.set_font("Helvetica", 'B', 11)
+        pdf.cell(0, 8, f"Name: {u['name']} | BMI: {u['bmi']}", ln=True)
         pdf.ln(5)
 
-        # Header Table
+        # Table Setup
+        col_time, col_details = 45, 145
+        line_h = 8
         pdf.set_fill_color(200, 220, 255)
-        pdf.set_font("Helvetica", 'B', 10)
-        pdf.cell(45, 10, "Time Slot", 1, 0, 'C', 1)
-        pdf.cell(145, 10, "Activity & Nutrition Details", 1, 1, 'C', 1)
+        pdf.cell(col_time, line_h, "Time Slot", 1, 0, 'C', 1)
+        pdf.cell(col_details, line_h, "Activity Details", 1, 1, 'C', 1)
 
-        # Body Table
         pdf.set_font("Helvetica", size=10)
         for slot, info in base_schedule.items():
-            details = f"{info['Activity']}: {info['Standard']}"
+            content = f"{info['Activity']}: {info['Standard']}"
             if slot == "06:00 - 07:00":
-                extra = ", ".join([concern_data[iss]["Morning"] for iss in rd["issues"]])
-                details += f" (Take: {extra})"
+                content += f" (Take: {', '.join([concern_data[iss]['Morning'] for iss in selected_issues])})"
             
-            # Using multi_cell to handle wrapping and prevent errors
-            x, y = pdf.get_x(), pdf.get_y()
-            pdf.multi_cell(45, 10, slot, border=1)
-            pdf.set_xy(x + 45, y)
-            pdf.multi_cell(145, 10, details, border=1)
+            # --- ROW ALIGNMENT LOGIC ---
+            # 1. Calculate how many lines 'content' will take
+            # get_string_width helps estimate wrapping
+            str_w = pdf.get_string_width(content)
+            num_lines = int(str_w / (col_details - 5)) + 1
+            if "\n" in content: num_lines += content.count("\n")
+            row_h = max(line_h, num_lines * (line_h - 2)) # Dynamic height
 
-        # Download Fix
-        try:
-            pdf_bytes = pdf.output(dest='S').encode('latin-1')
-            st.download_button(
-                label="📥 Download My NutriSense PDF",
-                data=pdf_bytes,
-                file_name=f"{rd['name']}_WellnessReport.pdf",
-                mime="application/pdf"
-            )
-        except Exception as e:
-            st.error("Failed to generate PDF. Please ensure all inputs are correct.")
+            curr_x, curr_y = pdf.get_x(), pdf.get_y()
+            
+            # 2. Draw Time Slot (fixed height to match details)
+            pdf.cell(col_time, row_h, slot, border=1, align='C')
+            
+            # 3. Draw Details (using multi_cell for wrapping)
+            pdf.set_xy(curr_x + col_time, curr_y)
+            pdf.multi_cell(col_details, row_h/num_lines if num_lines > 1 else row_h, content, border=1)
 
-    # Feedback
-    st.divider()
-    st.caption("NutriSense v1.0 | Educational purposes only.")
-    st.feedback("stars")
+        # --- DISCLAIMER ---
+        pdf.ln(10)
+        pdf.set_font("Helvetica", 'B', 9)
+        pdf.cell(0, 5, "LEGAL DISCLAIMER:", ln=True)
+        pdf.set_font("Helvetica", '', 8)
+        disclaimer = ("This report is for educational purposes only and does not constitute medical advice. "
+                      "Always consult with a healthcare professional before changing your diet or lifestyle.")
+        pdf.multi_cell(0, 4, disclaimer)
+
+        # Download Button
+        pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        st.download_button("📥 Download Official Report", pdf_bytes, f"NutriSense_{u['name']}.pdf", "application/pdf")
