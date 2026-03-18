@@ -1,126 +1,127 @@
 import streamlit as st
 from fpdf import FPDF
+import datetime
 
-# ---------------- DATA (10 SAMPLE CONCERNS) ----------------
+# ---------------- 1. ENHANCED DATA MODEL ----------------
 data_master = {
-    "Hair Fall": {"Yoga": "Adho Mukha Svanasana, Sarvangasana",
-                  "Food": "Moringa leaves, Amla, Curry leaves",
-                  "Reason": "Scalp circulation"},
-    "Eye Strain": {"Yoga": "Trataka (Candle Gazing), Palming",
-                   "Food": "Carrots, Papaya, Agathi Keerai",
-                   "Reason": "Vitamin A support"},
-    "Diabetes": {"Yoga": "Mandukasana, Paschimottanasana",
-                 "Food": "Fenugreek, Millets, Jamun",
-                 "Reason": "Insulin regulation"},
-    "Acidity/Digestion": {"Yoga": "Vajrasana, Pavanamuktasana",
-                           "Food": "Buttermilk, Fennel seeds, Ginger",
-                           "Reason": "Gut motility"},
-    "Anxiety/Stress": {"Yoga": "Shavasana, Nadi Shodhana",
-                       "Food": "Chamomile, Almonds, Dark Chocolate",
-                       "Reason": "Cortisol reduction"},
-    "Back Pain": {"Yoga": "Marjariasana, Bhujangasana",
-                  "Food": "Turmeric, Garlic, Drumstick leaves",
-                  "Reason": "Spine flexibility"},
-    "Anemia": {"Yoga": "Sarvangasana, Surya Namaskar",
-               "Food": "Dates, Jaggery, Pomegranate",
-               "Reason": "Hemoglobin boost"},
-    "High BP": {"Yoga": "Shavasana, Chandra Bhedi",
-                "Food": "Garlic, Banana, Low-salt diet",
-                "Reason": "Calms nervous system"},
-    "Thyroid": {"Yoga": "Ustrasana, Sarvangasana",
-                "Food": "Iodized salt, Walnut, Moong Dal",
-                "Reason": "Hormonal balance"}
+    "Hair Fall": {"Yoga": "Adho Mukha Svanasana, Sarvangasana", "Food": "Moringa, Amla", "Timing": "Morning empty stomach", "Reason": "Scalp circulation"},
+    "Eye Strain": {"Yoga": "Trataka (Candle Gazing), Palming", "Food": "Carrots, Papaya", "Timing": "During work breaks", "Reason": "Vitamin A support"},
+    "Diabetes": {"Yoga": "Mandukasana, Paschimottanasana", "Food": "Fenugreek, Jamun", "Timing": "Pre-meal", "Reason": "Insulin regulation"},
+    "Acidity": {"Yoga": "Vajrasana (Post-meal)", "Food": "Buttermilk, Ginger", "Timing": "After lunch", "Reason": "Gut motility"},
+    "Anxiety": {"Yoga": "Shavasana, Nadi Shodhana", "Food": "Almonds, Chamomile", "Timing": "Before sleep", "Reason": "Cortisol reduction"},
+    "Thyroid": {"Yoga": "Ustrasana, Sarvangasana", "Food": "Walnuts, Moong Dal", "Timing": "Daily consistent", "Reason": "Hormonal balance"}
 }
 
-# ---------------- ALERTS & MOTIVATION ----------------
-doctor_alert_text = "Doctor Alert: Consult your doctor before making any lifestyle changes or if you have medical conditions."
-hydration_text = "Hydration Reminder: Drink at least 8 glasses of water daily."
-disclaimer_text = "Disclaimer: This report is for educational purposes only. It does not replace professional medical advice."
-motivation_text = "Stay consistent! Small daily efforts lead to big results in your health journey."
+# ---------------- 2. APP CONFIG & SESSION STATE ----------------
+st.set_page_config(page_title="NutriSense Wellness", page_icon="🌿", layout="wide")
 
-# ---------------- APP CONFIG ----------------
-st.set_page_config(page_title="Nutri-Sense Wellness", page_icon="🌿", layout="wide")
-st.title("Nutri-Sense: Lifestyle & Health Guide")
+if 'submitted' not in st.session_state:
+    st.session_state.submitted = False
 
-# ---------------- USER FORM ----------------
-with st.form("user_form"):
-    st.subheader("Health Profile")
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("Name")
+st.title("🌿 NutriSense: Personalized Health Intelligence")
+
+# ---------------- 3. USER INPUT FORM ----------------
+with st.sidebar:
+    st.header("👤 User Profile")
+    with st.form("user_form"):
+        name = st.text_input("Full Name", placeholder="Enter your name")
         age = st.number_input("Age", 5, 100, 30)
-    with col2:
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-        selected = st.multiselect("Select Health Issues", list(data_master.keys()))
-    submit = st.form_submit_button("Generate Full Plan")
+        
+        st.divider()
+        st.subheader("Physical Metrics")
+        weight = st.number_input("Weight (kg)", 20.0, 200.0, 70.0)
+        height_cm = st.number_input("Height (cm)", 100.0, 250.0, 170.0)
+        
+        st.divider()
+        selected_issues = st.multiselect("Select Concerns", list(data_master.keys()))
+        
+        submit_btn = st.form_submit_button("Generate Health Plan")
 
-# ---------------- DISPLAY PLAN ----------------
-if submit:
-    if not name or not selected:
-        st.warning("Please fill all required fields.")
+# ---------------- 4. LOGIC & CALCULATION ----------------
+if submit_btn:
+    if not name or not selected_issues:
+        st.error("Please provide your name and select at least one health concern.")
     else:
-        st.success(f"Generated Plan for {name}")
+        st.session_state.submitted = True
+        # BMI Calculation
+        height_m = height_cm / 100
+        bmi = round(weight / (height_m ** 2), 1)
+        
+        if bmi < 18.5: bmi_cat = "Underweight"
+        elif 18.5 <= bmi < 25: bmi_cat = "Healthy Weight"
+        elif 25 <= bmi < 30: bmi_cat = "Overweight"
+        else: bmi_cat = "Obese"
+        
+        st.session_state.bmi_data = {"score": bmi, "category": bmi_cat}
 
-        # Display each issue
-        for issue in selected:
-            d = data_master[issue]
-            with st.expander(f"{issue}", expanded=True):
-                st.write(f"🧘 Yoga: {d['Yoga']}")
-                st.write(f"🍛 Food: {d['Food']}")
-                st.info(f"💡 Reason: {d['Reason']}")
+# ---------------- 5. DISPLAY CONTENT ----------------
+if st.session_state.submitted:
+    # Top Stats
+    c1, c2, c3 = st.columns(3)
+    c1.metric("BMI Score", st.session_state.bmi_data["score"])
+    c2.metric("Status", st.session_state.bmi_data["category"])
+    c3.metric("Concerns Tracked", len(selected_issues))
 
-        # Alerts + Motivation
-        st.warning(doctor_alert_text)
-        st.info(hydration_text)
-        st.caption(disclaimer_text)
-        st.success(motivation_text)
+    # Organized Tabs
+    tab_yoga, tab_diet, tab_report = st.tabs(["🧘 Yoga Studio", "🥗 Nutrition Lab", "📥 Export Report"])
 
-        # ---------------- PDF GENERATION ----------------
+    with tab_yoga:
+        for issue in selected_issues:
+            with st.expander(f"Yoga for {issue}", expanded=True):
+                st.write(f"**Recommended:** {data_master[issue]['Yoga']}")
+                st.info(f"**Focus:** {data_master[issue]['Reason']}")
+
+    with tab_diet:
+        for issue in selected_issues:
+            with st.expander(f"Diet for {issue}", expanded=True):
+                st.write(f"**Superfoods:** {data_master[issue]['Food']}")
+                st.write(f"**Best Time:** {data_master[issue]['Timing']}")
+
+    with tab_report:
+        st.subheader("Generate Official PDF")
+        
+        # PDF Generation Logic
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font('Arial', size=12)  # regular font
-
-        # Title
-        pdf.cell(0, 10, f"Wellness Report: {name}", ln=True, align='C')
+        pdf.set_font("helvetica", "B", 16)
+        pdf.cell(0, 10, "NUTRISENSE PERSONALIZED WELLNESS REPORT", ln=True, align='C')
+        pdf.set_font("helvetica", "", 10)
+        pdf.cell(0, 10, f"Date: {datetime.date.today()}", ln=True, align='R')
+        
+        # Profile Section
         pdf.ln(5)
-
-        # Table header
-        pdf.set_font('', 'B')
-        pdf.cell(50,8,"Issue",1,0,'C')
-        pdf.cell(70,8,"Yoga",1,0,'C')
-        pdf.cell(70,8,"Food",1,0,'C')
-        pdf.cell(0,8,"Reason",1,1,'C')
-        pdf.set_font('', '')
-
-        # Table rows
-        for issue in selected:
-            d = data_master[issue]
-            pdf.cell(50,8,issue,1)
-            pdf.cell(70,8,d['Yoga'],1)
-            pdf.cell(70,8,d['Food'],1)
-            pdf.cell(0,8,d['Reason'],1,1)
-
+        pdf.set_fill_color(240, 240, 240)
+        pdf.cell(0, 10, f" Name: {name} | BMI: {st.session_state.bmi_data['score']} ({st.session_state.bmi_data['category']})", fill=True, ln=True)
+        
+        # Table with Multi-line support
         pdf.ln(5)
-        pdf.multi_cell(0,8,doctor_alert_text)
-        pdf.ln(2)
-        pdf.multi_cell(0,8,hydration_text)
-        pdf.ln(2)
-        pdf.multi_cell(0,8,disclaimer_text)
-        pdf.ln(2)
-        pdf.multi_cell(0,8,motivation_text)
+        pdf.set_font("helvetica", "B", 11)
+        pdf.set_fill_color(100, 150, 255) # Header Blue
+        pdf.set_text_color(255, 255, 255)
+        pdf.cell(40, 10, "Concern", 1, 0, 'C', fill=True)
+        pdf.cell(70, 10, "Yoga & Exercise", 1, 0, 'C', fill=True)
+        pdf.cell(80, 10, "Dietary Recommendations", 1, 1, 'C', fill=True)
+        
+        pdf.set_text_color(0, 0, 0)
+        pdf.set_font("helvetica", "", 9)
+        for issue in selected_issues:
+            row = data_master[issue]
+            # Multi-cell handles text wrapping
+            x_start = pdf.get_x()
+            y_start = pdf.get_y()
+            pdf.multi_cell(40, 10, issue, border=1)
+            pdf.set_xy(x_start + 40, y_start)
+            pdf.multi_cell(70, 10, row['Yoga'], border=1)
+            pdf.set_xy(x_start + 110, y_start)
+            pdf.multi_cell(80, 10, f"{row['Food']} ({row['Timing']})", border=1)
 
-        pdf.ln(10)
-        pdf.cell(0,10,"© 2025 Nutri-Sense",ln=True,align='C')
+        pdf_bytes = pdf.output()
+        st.download_button("Download My NutriSense Report", data=pdf_bytes, file_name=f"{name}_report.pdf", mime="application/pdf")
 
-        # Download button
-        pdf_bytes = pdf.output(dest='S').encode('latin1')
-        st.download_button("Download Wellness Report (PDF)", pdf_bytes, f"{name}_Wellness_Report.pdf")
-
-        # ---------- Rating AFTER download ----------
-        st.subheader("Rate Your Health")
-        rating = st.radio(
-            "Choose your rating",
-            ["★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★"],
-            index=2
-        )
-        st.success(f"Thanks for your rating: {rating}")
+    # Persistent Rating System
+    st.divider()
+    st.subheader("Help us improve NutriSense")
+    rating = st.feedback("stars")
+    if rating is not None:
+        st.toast(f"Thank you for the {rating+1} star rating!")
