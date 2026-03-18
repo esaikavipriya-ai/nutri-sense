@@ -25,15 +25,20 @@ concern_data = {
     "High BP": {"Morning": "Poondu Water", "Yoga": "Shavasana"}
 }
 
-# 2. ---------------- LOGGING FUNCTION ----------------
-def log_download(name, bmi, issues):
+# 2. ---------------- LOGGING FUNCTION (INCLUDES GENDER) ----------------
+def log_download(name, gender, bmi, issues):
     log_file = "nutrisense_logs.csv"
     log_entry = pd.DataFrame([{
         "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p"),
-        "Name": name, "BMI": bmi, "Concerns": ", ".join(issues)
+        "Name": name, 
+        "Gender": gender,
+        "BMI": bmi, 
+        "Concerns": ", ".join(issues)
     }])
-    if not os.path.isfile(log_file): log_entry.to_csv(log_file, index=False)
-    else: log_entry.to_csv(log_file, mode='a', header=False, index=False)
+    if not os.path.isfile(log_file): 
+        log_entry.to_csv(log_file, index=False)
+    else: 
+        log_entry.to_csv(log_file, mode='a', header=False, index=False)
 
 # 3. ---------------- APP CONFIG ----------------
 st.set_page_config(page_title="NutriSense Tamil Nadu", layout="wide")
@@ -45,19 +50,35 @@ with st.sidebar:
     st.header("👤 Profile")
     with st.form("user_form"):
         name = st.text_input("Name")
+        gender = st.selectbox("Gender", ["Male", "Female", "Other"])
         weight = st.number_input("Weight (kg)", 30, 150, 70)
         height = st.number_input("Height (cm)", 100, 220, 170)
         selected_issues = st.multiselect("Concerns", list(concern_data.keys()))
         submit = st.form_submit_button("Generate Plan")
     
-    if st.checkbox("Admin: View Logs"):
-        if os.path.exists("nutrisense_logs.csv"):
-            st.dataframe(pd.read_csv("nutrisense_logs.csv"))
+    st.divider()
+    # SECURE ADMIN DOWNLOAD (NO PREVIEW)
+    if st.checkbox("Admin Access"):
+        pwd = st.text_input("Admin Password", type="password")
+        if pwd == "admin123": 
+            if os.path.exists("nutrisense_logs.csv"):
+                df = pd.read_csv("nutrisense_logs.csv")
+                st.success("Authorized")
+                st.download_button(
+                    label="📥 Download User Logs (CSV)",
+                    data=df.to_csv(index=False).encode('utf-8'),
+                    file_name="nutrisense_admin_logs.csv",
+                    mime="text/csv"
+                )
+            else:
+                st.info("No logs found yet.")
+        elif pwd:
+            st.error("Incorrect Password")
 
 if submit and name and selected_issues:
     st.session_state.submitted = True
     bmi = round(weight / ((height/100)**2), 1)
-    st.session_state.user_info = {"name": name, "bmi": bmi, "issues": selected_issues}
+    st.session_state.user_info = {"name": name, "gender": gender, "bmi": bmi, "issues": selected_issues}
 
 # 4. ---------------- UI & PDF ----------------
 if st.session_state.submitted:
@@ -65,7 +86,7 @@ if st.session_state.submitted:
     tab1, tab2 = st.tabs(["📅 Daily Plan", "📥 Download PDF"])
 
     with tab1:
-        st.subheader(f"Plan for {u['name']} (12hr Format)")
+        st.subheader(f"Plan for {u['name']} ({u['gender']})")
         for slot, info in base_schedule.items():
             st.info(f"**{slot}** | {info['Activity']}: {info['Standard']}")
 
@@ -79,15 +100,15 @@ if st.session_state.submitted:
         pdf.cell(0, 10, f"Generated: {datetime.datetime.now().strftime('%I:%M %p')}", ln=True, align='R')
         
         pdf.set_font("Helvetica", 'B', 11)
-        pdf.cell(0, 10, f"Name: {u['name']} | BMI: {u['bmi']}", ln=True)
+        pdf.cell(0, 10, f"Name: {u['name']} | Gender: {u['gender']} | BMI: {u['bmi']}", ln=True)
         pdf.ln(5)
 
-        # Header
-        col_w = [40, 75, 75]
+        # Header Configuration
+        col_w = 63 
         pdf.set_fill_color(220, 240, 220)
-        pdf.cell(col_w[0], 10, "Time (12h)", 1, 0, 'C', True)
-        pdf.cell(col_w[1], 10, "Activity & Yoga", 1, 0, 'C', True)
-        pdf.cell(col_w[2], 10, "Tamil Traditional Food", 1, 1, 'C', True)
+        pdf.cell(col_w, 10, "Time (12h)", 1, 0, 'C', True)
+        pdf.cell(col_w, 10, "Activity & Yoga", 1, 0, 'C', True)
+        pdf.cell(col_w, 10, "Tamil Traditional Food", 1, 1, 'C', True)
 
         pdf.set_font("Helvetica", '', 9)
         for slot, info in base_schedule.items():
@@ -99,17 +120,16 @@ if st.session_state.submitted:
 
             # --- ALIGNMENT LOGIC ---
             start_y = pdf.get_y()
-            # Calculate height needed
-            lines_y = len(pdf.multi_cell(col_w[1], 6, yoga_txt, split_only=True))
-            lines_f = len(pdf.multi_cell(col_w[2], 6, food_txt, split_only=True))
+            lines_y = len(pdf.multi_cell(col_w, 6, yoga_txt, split_only=True))
+            lines_f = len(pdf.multi_cell(col_w, 6, food_txt, split_only=True))
             max_h = max(lines_y, lines_f, 1) * 6 + 4
 
             # Draw cells
-            pdf.multi_cell(col_w[0], max_h, slot, border=1, align='C')
-            pdf.set_xy(pdf.l_margin + col_w[0], start_y)
-            pdf.multi_cell(col_w[1], max_h / (lines_y if lines_y > 0 else 1), yoga_txt, border=1)
-            pdf.set_xy(pdf.l_margin + col_w[0] + col_w[1], start_y)
-            pdf.multi_cell(col_w[2], max_h / (lines_f if lines_f > 0 else 1), food_txt, border=1)
+            pdf.multi_cell(col_w, max_h, slot, border=1, align='C')
+            pdf.set_xy(pdf.l_margin + col_w, start_y)
+            pdf.multi_cell(col_w, max_h / (lines_y if lines_y > 0 else 1), yoga_txt, border=1)
+            pdf.set_xy(pdf.l_margin + (col_w * 2), start_y)
+            pdf.multi_cell(col_w, max_h / (lines_f if lines_f > 0 else 1), food_txt, border=1)
             pdf.set_y(start_y + max_h)
 
         # Disclaimer
@@ -119,4 +139,5 @@ if st.session_state.submitted:
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
         if st.download_button("📥 Download PDF", pdf_bytes, f"{u['name']}_Report.pdf", "application/pdf"):
-            log_download(u['name'], u['bmi'], u['issues'])
+            log_download(u['name'], u['gender'], u['bmi'], u['issues'])
+            st.success("Download Logged to CSV.")
