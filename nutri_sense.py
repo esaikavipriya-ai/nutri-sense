@@ -26,36 +26,27 @@ concern_data = {
     "High BP": {"Morning": "Poondu (Garlic) Water", "Yoga": "Shavasana"}
 }
 
-# 2. ---------------- LOGGING FUNCTION (IST & ABSOLUTE PATH) ----------------
+# 2. ---------------- LOGGING FUNCTION (SILENT SAVING) ----------------
 def log_download(name, age, gender, bmi, issues):
-    # Set the timezone to IST (Asia/Kolkata)
     ist = pytz.timezone('Asia/Kolkata')
     timestamp = datetime.datetime.now(ist).strftime("%Y-%m-%d %I:%M:%S %p")
     
-    # Target Path for Science Expo
+    # Path for Science Expo
     target_path = r"C:\Users\LENOVO\Documents\qwings\Science Expo"
-    
-    # Create folder if it doesn't exist
     if not os.path.exists(target_path):
         os.makedirs(target_path)
         
     log_file = os.path.join(target_path, "nutrisense_logs.csv")
     
     log_entry = pd.DataFrame([{
-        "Timestamp": timestamp,
-        "Name": name, 
-        "Age": age,
-        "Gender": gender,
-        "BMI": bmi, 
-        "Concerns": ", ".join(issues)
+        "Timestamp": timestamp, "Name": name, "Age": age, 
+        "Gender": gender, "BMI": bmi, "Concerns": ", ".join(issues)
     }])
     
     if not os.path.isfile(log_file): 
         log_entry.to_csv(log_file, index=False)
     else: 
         log_entry.to_csv(log_file, mode='a', header=False, index=False)
-    
-    return log_file
 
 # 3. ---------------- APP CONFIG & UI ----------------
 st.set_page_config(page_title="NutriSense Tamil Nadu", layout="wide")
@@ -97,10 +88,8 @@ if st.session_state.submitted:
         pdf.set_font("Helvetica", 'B', 16)
         pdf.cell(0, 10, "NUTRISENSE WELLNESS REPORT", ln=True, align='C')
         
-        # Current time in IST for the report
         ist = pytz.timezone('Asia/Kolkata')
         report_time = datetime.datetime.now(ist).strftime('%I:%M %p')
-        
         pdf.set_font("Helvetica", 'I', 9)
         pdf.cell(0, 10, f"Generated: {report_time}", ln=True, align='R')
         
@@ -108,7 +97,6 @@ if st.session_state.submitted:
         pdf.cell(0, 10, f"Name: {u['name']} | Age: {u['age']} | Gender: {u['gender']} | BMI: {u['bmi']}", ln=True)
         pdf.ln(5)
 
-        # Header Configuration
         col_w = 63 
         pdf.set_fill_color(220, 240, 220)
         pdf.cell(col_w, 10, "Time (12h)", 1, 0, 'C', True)
@@ -123,7 +111,6 @@ if st.session_state.submitted:
                 yoga_txt += "\nYoga: " + ", ".join([concern_data[i]['Yoga'] for i in u['issues']])
                 food_txt += "\nDetox: " + ", ".join([concern_data[i]['Morning'] for i in u['issues']])
 
-            # Row Alignment Logic
             start_y = pdf.get_y()
             lines_y = len(pdf.multi_cell(col_w, 6, yoga_txt, split_only=True))
             lines_f = len(pdf.multi_cell(col_w, 6, food_txt, split_only=True))
@@ -141,6 +128,8 @@ if st.session_state.submitted:
         pdf.multi_cell(0, 5, "Disclaimer: Based on Tamil traditional practices. Consult a doctor before starting.")
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        
+        # --- FIXED SUCCESS MESSAGE ---
         if st.download_button("📥 Download PDF Report", pdf_bytes, f"{u['name']}_WellnessReport.pdf", "application/pdf"):
-            saved_to = log_download(u['name'], u['age'], u['gender'], u['bmi'], u['issues'])
-            st.success(f"Report downloaded! CSV saved at: {saved_to}")
+            log_download(u['name'], u['age'], u['gender'], u['bmi'], u['issues'])
+            st.success("Report Downloaded!") # Technical path removed
