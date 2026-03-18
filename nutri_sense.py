@@ -26,13 +26,21 @@ concern_data = {
     "High BP": {"Morning": "Poondu (Garlic) Water", "Yoga": "Shavasana"}
 }
 
-# 2. ---------------- LOGGING FUNCTION (IST FIXED) ----------------
+# 2. ---------------- LOGGING FUNCTION (IST & ABSOLUTE PATH) ----------------
 def log_download(name, age, gender, bmi, issues):
     # Set the timezone to IST (Asia/Kolkata)
     ist = pytz.timezone('Asia/Kolkata')
     timestamp = datetime.datetime.now(ist).strftime("%Y-%m-%d %I:%M:%S %p")
     
-    log_file = "nutrisense_logs.csv"
+    # Target Path for Science Expo
+    target_path = r"C:\Users\LENOVO\Documents\qwings\Science Expo"
+    
+    # Create folder if it doesn't exist
+    if not os.path.exists(target_path):
+        os.makedirs(target_path)
+        
+    log_file = os.path.join(target_path, "nutrisense_logs.csv")
+    
     log_entry = pd.DataFrame([{
         "Timestamp": timestamp,
         "Name": name, 
@@ -46,6 +54,8 @@ def log_download(name, age, gender, bmi, issues):
         log_entry.to_csv(log_file, index=False)
     else: 
         log_entry.to_csv(log_file, mode='a', header=False, index=False)
+    
+    return log_file
 
 # 3. ---------------- APP CONFIG & UI ----------------
 st.set_page_config(page_title="NutriSense Tamil Nadu", layout="wide")
@@ -132,5 +142,5 @@ if st.session_state.submitted:
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
         if st.download_button("📥 Download PDF Report", pdf_bytes, f"{u['name']}_WellnessReport.pdf", "application/pdf"):
-            log_download(u['name'], u['age'], u['gender'], u['bmi'], u['issues'])
-            st.success(f"Report downloaded. Logs saved at: {os.path.abspath('nutrisense_logs.csv')}")
+            saved_to = log_download(u['name'], u['age'], u['gender'], u['bmi'], u['issues'])
+            st.success(f"Report downloaded! CSV saved at: {saved_to}")
