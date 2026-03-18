@@ -122,7 +122,7 @@ if st.session_state.submitted:
 
         pdf.ln(10)
         pdf.set_font("Helvetica", 'I', 8)
-        pdf.multi_cell(0, 5, "Disclaimer: Based on Tamil traditional practices. Consult a doctor before starting.")
+        pdf.multi_cell(0, 5, "Disclaimer: Based on Tamil traditional practices.")
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
         if st.download_button("📥 Download PDF", pdf_bytes, f"{u['name']}_Report.pdf", "application/pdf"):
