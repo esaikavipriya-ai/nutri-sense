@@ -3,6 +3,7 @@ from fpdf import FPDF
 import datetime
 import pandas as pd
 import os
+import pytz  # Required for IST timezone support
 
 # 1. ---------------- DATA MASTER (TAMIL NADU 12-HR) ----------------
 base_schedule = {
@@ -10,7 +11,7 @@ base_schedule = {
     "08:30 AM - 09:30 AM": {"Activity": "Traditional Breakfast", "Standard": "Millet Idli or Ragi Dosai with Chutney"},
     "11:00 AM - 11:30 AM": {"Activity": "Mid-Morning Refresh", "Standard": "Elaneer (Tender Coconut) or Neer Mor"},
     "01:00 PM - 02:00 PM": {"Activity": "Nutritious Lunch", "Standard": "Red Rice, Keerai Poriyal, and Rasam"},
-    "04:30 PM - 05:30 PM": {"Activity": "Evening Protein", "Standard": "Sundal (Chickpea/Green Gram)"},
+    "04:30 PM - 05:30 PM": {"Activity": "Evening Protein Snack", "Standard": "Sundal (Chickpea/Green Gram)"},
     "07:30 PM - 08:30 PM": {"Activity": "Light Dinner", "Standard": "Idiyappam or Millet Kanji"}
 }
 
@@ -22,40 +23,45 @@ concern_data = {
     "Thyroid": {"Morning": "Kothamalli Water", "Yoga": "Ustrasana"},
     "PCOD/PCOS": {"Morning": "Ulunthu Kanji", "Yoga": "Baddha Konasana"},
     "Joint Pain": {"Morning": "Mudakathan Soup", "Yoga": "Tadasana"},
-    "High BP": {"Morning": "Poondu Water", "Yoga": "Shavasana"}
+    "High BP": {"Morning": "Poondu (Garlic) Water", "Yoga": "Shavasana"}
 }
 
-# 2. ---------------- LOGGING FUNCTION (INCLUDES AGE & GENDER) ----------------
+# 2. ---------------- LOGGING FUNCTION (IST FIXED) ----------------
 def log_download(name, age, gender, bmi, issues):
+    # Set the timezone to IST (Asia/Kolkata)
+    ist = pytz.timezone('Asia/Kolkata')
+    timestamp = datetime.datetime.now(ist).strftime("%Y-%m-%d %I:%M:%S %p")
+    
     log_file = "nutrisense_logs.csv"
     log_entry = pd.DataFrame([{
-        "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %I:%M:%S %p"),
+        "Timestamp": timestamp,
         "Name": name, 
         "Age": age,
         "Gender": gender,
         "BMI": bmi, 
         "Concerns": ", ".join(issues)
     }])
+    
     if not os.path.isfile(log_file): 
         log_entry.to_csv(log_file, index=False)
     else: 
         log_entry.to_csv(log_file, mode='a', header=False, index=False)
 
-# 3. ---------------- APP CONFIG ----------------
+# 3. ---------------- APP CONFIG & UI ----------------
 st.set_page_config(page_title="NutriSense Tamil Nadu", layout="wide")
 if 'submitted' not in st.session_state: st.session_state.submitted = False
 
 st.title("🌿 NutriSense: Tamil Traditional Wellness")
 
 with st.sidebar:
-    st.header("👤 Profile")
+    st.header("👤 Your Profile")
     with st.form("user_form"):
         name = st.text_input("Name")
         age = st.number_input("Age", 5, 100, 25)
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-        weight = st.number_input("Weight (kg)", 30, 150, 70)
-        height = st.number_input("Height (cm)", 100, 220, 170)
-        selected_issues = st.multiselect("Concerns", list(concern_data.keys()))
+        weight = st.number_input("Weight (kg)", 30.0, 150.0, 70.0)
+        height = st.number_input("Height (cm)", 100.0, 220.0, 170.0)
+        selected_issues = st.multiselect("Select Concerns", list(concern_data.keys()))
         submit = st.form_submit_button("Generate Plan")
 
 # 4. ---------------- UI & PDF ----------------
@@ -63,11 +69,7 @@ if submit and name and selected_issues:
     st.session_state.submitted = True
     bmi = round(weight / ((height/100)**2), 1)
     st.session_state.user_info = {
-        "name": name, 
-        "age": age, 
-        "gender": gender, 
-        "bmi": bmi, 
-        "issues": selected_issues
+        "name": name, "age": age, "gender": gender, "bmi": bmi, "issues": selected_issues
     }
 
 if st.session_state.submitted:
@@ -85,8 +87,12 @@ if st.session_state.submitted:
         pdf.set_font("Helvetica", 'B', 16)
         pdf.cell(0, 10, "NUTRISENSE WELLNESS REPORT", ln=True, align='C')
         
+        # Current time in IST for the report
+        ist = pytz.timezone('Asia/Kolkata')
+        report_time = datetime.datetime.now(ist).strftime('%I:%M %p')
+        
         pdf.set_font("Helvetica", 'I', 9)
-        pdf.cell(0, 10, f"Generated: {datetime.datetime.now().strftime('%I:%M %p')}", ln=True, align='R')
+        pdf.cell(0, 10, f"Generated: {report_time}", ln=True, align='R')
         
         pdf.set_font("Helvetica", 'B', 11)
         pdf.cell(0, 10, f"Name: {u['name']} | Age: {u['age']} | Gender: {u['gender']} | BMI: {u['bmi']}", ln=True)
@@ -107,7 +113,7 @@ if st.session_state.submitted:
                 yoga_txt += "\nYoga: " + ", ".join([concern_data[i]['Yoga'] for i in u['issues']])
                 food_txt += "\nDetox: " + ", ".join([concern_data[i]['Morning'] for i in u['issues']])
 
-            # --- ALIGNMENT LOGIC ---
+            # Row Alignment Logic
             start_y = pdf.get_y()
             lines_y = len(pdf.multi_cell(col_w, 6, yoga_txt, split_only=True))
             lines_f = len(pdf.multi_cell(col_w, 6, food_txt, split_only=True))
@@ -122,9 +128,9 @@ if st.session_state.submitted:
 
         pdf.ln(10)
         pdf.set_font("Helvetica", 'I', 8)
-        pdf.multi_cell(0, 5, "Disclaimer: Based on Tamil traditional practices.")
+        pdf.multi_cell(0, 5, "Disclaimer: Based on Tamil traditional practices. Consult a doctor before starting.")
 
         pdf_bytes = pdf.output(dest='S').encode('latin-1')
-        if st.download_button("📥 Download PDF", pdf_bytes, f"{u['name']}_Report.pdf", "application/pdf"):
+        if st.download_button("📥 Download PDF Report", pdf_bytes, f"{u['name']}_WellnessReport.pdf", "application/pdf"):
             log_download(u['name'], u['age'], u['gender'], u['bmi'], u['issues'])
-            st.success("Download Logged.")
+            st.success(f"Report downloaded. Logs saved at: {os.path.abspath('nutrisense_logs.csv')}")
